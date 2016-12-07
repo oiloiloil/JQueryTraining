@@ -57,5 +57,25 @@
         </div>
     </div>
 </body>
-
+<script>
+	$(document).ready(function() {
+		$.ajax({
+			url: "../xml/simpleappledaily.xml",
+			type: "GET",
+			dataType: "xml",
+			success: function(xml) {
+				$(xml).find("item").each(function(i) {
+					console.log($(this).children("title").text());
+					console.log(i);
+					var title = $(this).children("title").text();
+					var description = $(this).children("description").text();
+					var $obj = $("#f0").after($("<div></div>"));
+					
+					
+				});
+			}
+		});
+	});
+</script>
+	
 </html>
