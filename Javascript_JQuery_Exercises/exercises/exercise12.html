@@ -73,6 +73,63 @@
         <div class="footer">&copy; 2006 <a href="index.html">Website.com</a>. Valid <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> &amp; <a href="http://validator.w3.org/check?uri=referer">XHTML</a>. Template design by <a href="http://templates.arcsin.se">Arcsin</a>
         </div>
     </div>
+    <script>
+        $(document).ready(function(){
+            //$("#add_data").attr("disabled", true);
+            //$("#del_data").attr("disabled", true);
+            
+            $("#grid_id").jqGrid({
+                datatype: "json",
+                colNames: ['sid', 'stu_id', 'stu_name', 'tea_name', 'course', 'semester', 'score'],
+                colModel: [
+                           {name:'sid',index:'sid', width:60, sorttype:"int"},
+                           {name:'stu_id',index:'stu_id', width:90, sorttype:"int"},
+                           {name:'stu_name',index:'stu_name', width:100},
+                           {name:'tea_name',index:'tea_name', width:100},
+                           {name:'course',index:'course', width:100},
+                           {name:'semester',index:'semester', width:80},
+                           {name:'score',index:'score', width:80,sorttype:false}],
+                rowNum: 10,
+                rowList: [10,20,30],
+                pager: '#clearer',
+                sortname: 'id',
+                viewrecords: true,
+                sortorder: "desc"
+            });
+        });
+        
+        $("#grid_id").jqGrid('navGrid', "#clearer", {edit: false,add: false,del: false});
+        
+        $("#edit_data").click(function(){
+            //$("#grid_id").jqGrid('editRow',"1");
+            $("#grid_id").editRow('1');
+            //$(this).attr("disabled", true);
+            //$("#add_data, #del_data").attr("disabled", false);
+        });
+        
+        var index = 1;
+        $("#add_data").click(function(){
+            var data = [{sid: index, stu_id: index, stu_name: "", tea_name: "", course: "", semester: "", score: ""}];
+            $("#grid_id").jqGrid('addRowData', index, data[0]);
+            console.log(index);
+            var ids = jQuery("#grid_id").jqGrid('getDataIDs');
+            for(var i = 0; i < ids; i++) {
+                var cl = ids[i];
+                console.log(cl);
+            }
+            index++;
+            //jQuery("#grid_id").jqGrid('saveRow',"1");
+            //$(this).attr("disabled", false);
+            //$("#add_data, #del_data").attr("disabled", true);
+        });
+        
+        $("del_data").click(function(){
+            //$(this).attr("disabled", false);
+            //$("#add_data, #del_data").attr("disabled", true);
+        });
+        
+        
+    </script>
 </body>
 
 </html>

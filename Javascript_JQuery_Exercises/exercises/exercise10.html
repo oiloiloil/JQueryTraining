@@ -141,48 +141,183 @@
         </div>
     </div>
 	<script>
-		$("#usr").keypress(function() {
-			console.log($("#usr").val().length);
-			if($("#usr").val().length == 11) // input裡的value，輸入第一個字時是從0算起
-				$("#passwd").focus();
+        var idArray = ["usr", "passwd", "passwd2", "fn", "ln", "phone", "mail"];
+        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 29為閏年
+        
+        $(document).ready(function(){
+            putYearInSelect();
+            putMonthInSelect();
+        });
+        
+        $("#stYy").change(function(){
+            checkSelectIsNotDefault_YearAndMonth();
+            checkSelectIsNotDefault_StartYMD();
+        });
+        $("#stMm").change(function(){
+            checkSelectIsNotDefault_YearAndMonth();
+            checkSelectIsNotDefault_StartYMD();
+        });
+        $("#stDd").change(function(){
+            checkSelectIsNotDefault_StartYMD();
+        });
+        function checkSelectIsNotDefault_YearAndMonth(){ // 起始的年和月的值不是請選擇
+            if($("#stYy").find(":selected").text() != "請選擇" && $("#stMm").find(":selected").text() != "請選擇") {
+                putDayInSelect();
+            }
+        }
+        function checkSelectIsNotDefault_StartYMD(){
+            if($("#stYy").find(":selected").text() != "請選擇" && $("#stMm").find(":selected").text() != "請選擇" &&
+               $("#stDd").find(":selected").text() != "請選擇") {
+                changeEndYMD();
+            }
+        }
+        function changeEndYMD(){
+            var startY = $("#stYy").find(":selected").text();
+            var startM = $("#stMm").find(":selected").text();
+            var startD = $("#stDd").find(":selected").text();
+            
+            var endY;
+            var endM;
+            var endD;
+            
+            if(startM == 2 && isLunarYear(startY)) {
+                endD = parseInt(startD) + 1;
+                if(endD > days[12]) {
+                    endM = startM + 1;
+                    if(endM > 12) {
+                        endY = startY + 1;
+                    }
+                }
+            }
+            else {
+                endD = parseInt(startD) + 1;
+                if(endD > days[startM - 1]) {
+                    endM = startM + 1;
+                    if(endM > 12) {
+                        endY = startY + 1;
+                    }
+                }
+            }
+            
+            $("#edYy option").filter(function(){
+                return $(this).text() == startY;
+            }).attr("selected", true);
+            $("#edMm option").filter(function(){
+                return $(this).text() == startM;
+            }).attr("selected", true);
+            putDayInSelect_end();
+            $("#edDd option").filter(function(){
+                return $(this).text() == endD;
+            }).attr("selected", true);
+        }
+        
+        function putYearInSelect(){
+            var startYear = 2006; // 目前年份的前後10年
+            var endYear = 2026;
+            for(var i = startYear; i <= endYear; i++) {
+                $("#stYy").append($("<option></option>").text(i));
+                $("#edYy").append($("<option></option>").text(i));
+            }
+        }
+        function putMonthInSelect(){
+            var startMonth = 1;
+            var endMonth = 12;
+            for(var i = startMonth; i <= endMonth; i++) {
+                $("#stMm").append($("<option></option>").text(i));
+                $("#edMm").append($("<option></option>").text(i));
+            }
+        }
+        function putDayInSelect(){
+            $("#stDd option[value !='請選擇']").remove();
+            var startY = $("#stYy").find(":selected").text();
+            var startM = $("#stMm").find(":selected").text();
+            if(startM == 2)
+                if(isLunarYear(startY))
+                    startM = 13;
+            for(var i = 1; i <= days[startM-1]; i++) {
+                 $("#stDd").append($("<option></option>").text(i));
+            }
+        }
+        function isLunarYear(startY) {
+            if(startY % 4 == 0 && startY % 100 != 0)
+                return true;
+            return false;
+        }
+        function putDayInSelect_end(){
+            $("#edDd option[value !='請選擇']").remove();
+            var endY = $("#edYy").find(":selected").text();
+            var endM = $("#edMm").find(":selected").text();
+            if(endM == 2)
+                if(isLunarYear(endY))
+                    endM = 13;
+            for(var i = 1; i <= days[endM-1]; i++) {
+                 $("#edDd").append($("<option></option>").text(i));
+            }
+        }
+        
+        $(function(){
+            $("#birth").datepicker();
+        });
+        
+        $("input").keypress(function(){
+            if($(this).val().length == ($(this).attr("maxlength"))-1) {
+                console.log($(this).next());
+                var index = idArray.indexOf($(this).attr("id"));
+                console.log(index);
+                if(index != idArray.length-1)
+                    $("#" + idArray[index+1] + "").focus();
+            }
+        });
+        
+		$("#clear").click(function(){
+			$("input[id !='submit'][id !='clear']").val("");
+
 		});
-		
-		$("#passwd").keypress(function() {
-			if($("#passwd").val().length == 11)
-				$("#passwd2").focus();
-		});
-		
-		$("#passwd2").keypress(function() {
-			if($("#passwd").val().length == 11)
-				$("#fn").focus();
-		});
-		
-		$("#fn").keypress(function() {
-			if($("#fn").val().length == 29)
-				$("#ln").focus();
-		});
-		
-		$("#ln").keypress(function() {
-			if($("#ln").val().length == 29)
-				$("#birth").focus();
-		});
-		
-		$("#birth").keypress(function() {
-			
-		});
-		
-		$("#phone").keypress(function() {
-			if($("#phone").val().length == 9)
-				$("#mail").focus();
-		});
-		
-		$("#mail").keypress(function() {
-			
-		});
-		
-		$("#clear").click(function() {
-			
-		});
+        
+        function check(){
+            console.log("check");
+            var name = $("#usr").val();
+            nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]/;
+            if(name.search(nameRule) == -1){
+                alert("username輸入錯誤");
+                $("#usr").focus();
+                return false;
+            }
+            // 數字加標點符號會通過 ex.123--+
+            var passwd = $("#passwd").val();
+            passwdRule = /[a-zA-Z0-9]+/;
+            console.log(passwd);
+            if(passwd.search(passwdRule) == -1){
+                alert("password輸入錯誤");
+                $("#passwd").focus();
+                return false;
+            }
+            
+            var passwd2 = $("#passwd2").val();
+            console.log(passwd2);
+            if(passwd2 != passwd) {
+                alert("password confirm輸入錯誤");
+                $("#passwd2").focus();
+                return false;
+            }
+            
+            var email = $("#mail").val();
+            mailRule = /[a-zA-Z0-9]+@([a-zA-Z0-9]+\.+[a-zA-Z0-9]+)+/;
+            if(email.search(mailRule) == -1){
+                alert("email輸入錯誤");
+                $("#mail").focus();
+                return false;
+            }
+
+            if($("#stYy").find(":selected").text() > $("#edYy").find(":selected").text() ||
+               $("#stMm").find(":selected").text() > $("#edMm").find(":selected").text() ||
+               $("#stDd").find(":selected").text() > $("#edDd").find(":selected").text()) {
+                alert("日期輸入錯誤");
+                return false;
+            }
+
+            return true;
+        }
 		
 	</script>
 </body>

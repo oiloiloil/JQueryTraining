@@ -75,7 +75,7 @@
                         <tr>
                             <td>
                                 <input id="keyword" type="text" size="70">
-                                <input type="button" value="搜尋" style="width:60px">
+                                <input id="searchBtn" type="button" value="搜尋" style="width:60px">
                             </td>
                         </tr>
                         <tr>
@@ -166,6 +166,60 @@
         <div class="footer">&copy; 2006 <a href="index.html">Website.com</a>. Valid <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> &amp; <a href="http://validator.w3.org/check?uri=referer">XHTML</a>. Template design by <a href="http://templates.arcsin.se">Arcsin</a>
         </div>
     </div>
+    <script>
+        var SUGGEST_URL = "http://192.168.0.105:9099/suggest.php?key="; 
+        var SEARCH_URL = "http://192.168.0.105:9099/search.php?key="; 
+        var SCHEDULE_URL = "http://192.168.0.105:9099/schedule.php?ser_no=";
+        $(document).ready(function() {
+            
+        });
+        
+        $("#keyword").keypress(function() {
+            //$("#keyword").val($("#keyword").val().replace(/[^a-zA-Z]/g,''));
+            
+            if($("#search_course").html() != null)
+                $("#search_course").remove();
+            
+            var tempURL = SUGGEST_URL + $("#keyword").val();
+            $.ajax({
+                url: tempURL,
+                success: function(result){
+                    console.log(result);
+                    $("#suggest").append($("<p></p>").attr("id", "search_course").text(result));
+                }
+            });
+        });
+        
+        var items = [];
+        $("#searchBtn").click(function(){
+            console.log("search");
+            var tempURL = SEARCH_URL + $("#keyword").val();
+            $.ajax({
+                url: tempURL,
+                type: "GET",
+                dataType: "json",
+                async: false,
+                success: function(result){
+                    $.each(result, function(key, val){
+                        var tr = $("#serch_result").after($("<tr></tr>"));
+                        tr.after($("<td></td>").text(key));
+                        tr.after($("<td></td>").text(val));
+                        //items.push(key);
+                        //items.push(val);
+                    });
+                    /*
+                    for(var i = 0; i < items.length; i++) {
+                        console.log(items[i]);
+                        tr = $("#search_result").append($("<tr></tr>"));
+                        tr.append($("<td></td>").text(items[i]));
+                    }
+                    */
+                }
+            });
+        });
+        
+        
+    </script>
 </body>
 
 </html>
