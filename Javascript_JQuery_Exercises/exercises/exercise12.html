@@ -74,61 +74,72 @@
         </div>
     </div>
     <script>
-        $(document).ready(function(){
-            //$("#add_data").attr("disabled", true);
-            //$("#del_data").attr("disabled", true);
-            
+        var myData = [{sid: 1, stu_id: 1, stu_name: "oil", tea_name: "josh", course: "c", semester: "1", score: "70"},
+                    {sid: 2, stu_id: 2, stu_name: "john", tea_name: "josh", course: "c", semester: "1", score: "60"},
+                    {sid: 3, stu_id: 3, stu_name: "amy", tea_name: "josh", course: "c", semester: "1", score: "50"},
+                    {sid: 4, stu_id: 5, stu_name: "brad", tea_name: "frank", course: "e", semester: "2", score: "80"},
+                    {sid: 5, stu_id: 7, stu_name: "adam", tea_name: "frank", course: "e", semester: "2", score: "90"},
+                    {sid: 6, stu_id: 9, stu_name: "nicole", tea_name: "frank", course: "e", semester: "2", score: "10"}];
+
+        $(document).ready(function(){            
             $("#grid_id").jqGrid({
-                datatype: "json",
+                datatype: "local",
                 colNames: ['sid', 'stu_id', 'stu_name', 'tea_name', 'course', 'semester', 'score'],
                 colModel: [
                            {name:'sid',index:'sid', width:60, sorttype:"int"},
-                           {name:'stu_id',index:'stu_id', width:90, sorttype:"int"},
-                           {name:'stu_name',index:'stu_name', width:100},
-                           {name:'tea_name',index:'tea_name', width:100},
-                           {name:'course',index:'course', width:100},
-                           {name:'semester',index:'semester', width:80},
-                           {name:'score',index:'score', width:80,sorttype:false}],
+                           {name:'stu_id',index:'stu_id', width:90, sorttype:"int", editable: true},
+                           {name:'stu_name',index:'stu_name', width:100, editable: true},
+                           {name:'tea_name',index:'tea_name', width:100, editable: true},
+                           {name:'course',index:'course', width:100, editable: true},
+                           {name:'semester',index:'semester', width:80, editable: true},
+                           {name:'score',index:'score', width:80,sorttype:false, editable: true}],
                 rowNum: 10,
                 rowList: [10,20,30],
-                pager: '#clearer',
-                sortname: 'id',
+                sortname: 'sid',
                 viewrecords: true,
-                sortorder: "desc"
+                sortorder: "desc",
+                error: function(result) {
+                    alert(result);
+                }
             });
+
+            for(var i = 0; i < myData.length; i++) {
+                $("#grid_id").jqGrid('addRowData', i + 1, myData[i]);
+            }
         });
-        
-        $("#grid_id").jqGrid('navGrid', "#clearer", {edit: false,add: false,del: false});
         
         $("#edit_data").click(function(){
-            //$("#grid_id").jqGrid('editRow',"1");
-            $("#grid_id").editRow('1');
-            //$(this).attr("disabled", true);
-            //$("#add_data, #del_data").attr("disabled", false);
+            console.log("edit data");
+            var index; 
+            index = $("#grid_id").jqGrid('getGridParam','selrow');
+            $("#grid_id").jqGrid('editRow', index);
+            if($("#save_data").html() == null)
+                $("div [class='main']").append($("<input type='button' id='save_data' value='save data' onclick='saveData()'/>"));
         });
         
-        var index = 1;
         $("#add_data").click(function(){
-            var data = [{sid: index, stu_id: index, stu_name: "", tea_name: "", course: "", semester: "", score: ""}];
-            $("#grid_id").jqGrid('addRowData', index, data[0]);
+            var index = $("#grid_id").jqGrid("getGridParam", "records");
+            $("#grid_id").jqGrid('addRowData', index + 1, {sid: index + 1, stu_id: 0, stu_name: "", tea_name: "", course: "", semester: "", score: ""});
+            console.log("add data");
+            
+        });
+        
+        $("#del_data").click(function(){
+            console.log("del data");
+            var index; 
+            index = $("#grid_id").jqGrid('getGridParam','selrow');
+            $("#grid_id").jqGrid("delRowData", index);
+        });
+
+        // 儲存時仍會出現問題
+        function saveData(){
+            console.log("save data");
+            var index = $("#grid_id").jqGrid('getGridParam','selrow');
             console.log(index);
-            var ids = jQuery("#grid_id").jqGrid('getDataIDs');
-            for(var i = 0; i < ids; i++) {
-                var cl = ids[i];
-                console.log(cl);
-            }
-            index++;
-            //jQuery("#grid_id").jqGrid('saveRow',"1");
-            //$(this).attr("disabled", false);
-            //$("#add_data, #del_data").attr("disabled", true);
-        });
-        
-        $("del_data").click(function(){
-            //$(this).attr("disabled", false);
-            //$("#add_data, #del_data").attr("disabled", true);
-        });
-        
-        
+            $("#grid_id").jqGrid('saveRow', index);
+            $("#save_data").remove();
+        }
+
     </script>
 </body>
 

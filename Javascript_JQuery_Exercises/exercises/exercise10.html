@@ -302,7 +302,7 @@
             }
             
             var email = $("#mail").val();
-            mailRule = /[a-zA-Z0-9]+@([a-zA-Z0-9]+\.+[a-zA-Z0-9]+)+/;
+            mailRule = /[-\w.]+@([A-z0-9]+\.[a-zA-Z0-9]+)+/;
             if(email.search(mailRule) == -1){
                 alert("email輸入錯誤");
                 $("#mail").focus();

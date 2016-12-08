@@ -70,36 +70,36 @@
                     <table height="200px" width="700px">
                         <tr>
                             <td colspan=2>User Name:
-                                <input type="text" id="usr" maxlength="12" size="13" name="usr">
+                                <input type="text" id="usr" maxlength="12" size="13" name="usr" class="required checkName">
                             </td>
                         </tr>
                         <tr>
                             <td>Password:
-                                <input type="password" id="passwd" maxlength="12" size="13" name="passwd">
+                                <input type="password" id="passwd" maxlength="12" size="13" name="passwd" >
                             </td>
                             <td>Password Conform:
-                                <input type="password" id="passwd2" maxlength="12" size="13" name="passwd2">
+                                <input type="password" id="passwd2" maxlength="12" size="13" name="passwd2" >
                             </td>
                         </tr>
                         <tr>
                             <td>First Name:
-                                <input type="text" id="fn" maxlength="30" size="15" name="fn">
+                                <input type="text" id="fn" maxlength="30" size="15" name="fn" >
                             </td>
                             <td>Last Name:
-                                <input type="text" id="ln" maxlength="30" size="15" name="ln">
+                                <input type="text" id="ln" maxlength="30" size="15" name="ln" >
                             </td>
                         </tr>
                         <tr>
                             <td>Birthday:
-                                <input type="text" id="birth" maxlength="10" size="11" name="birth">
+                                <input type="text" id="birth" maxlength="10" size="11" name="birth" >
                             </td>
                             <td>Cell Phone:
-                                <input type="text" id="phone" maxlength="10" size="11" name="phone">
+                                <input type="text" id="phone" maxlength="10" size="11" name="phone" >
                             </td>
                         </tr>
                         <tr>
                             <td colspan=2>E-Mail:
-                                <input type="text" id="mail" maxlength="70" size="40" name="mail">
+                                <input type="text" id="mail" maxlength="70" size="40" name="mail" >
                             </td>
                         </tr>
                         <tr>
@@ -151,9 +151,36 @@
         var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 29為閏年
         
         $(document).ready(function(){
+            setRules();
+
+
             putYearInSelect();
             putMonthInSelect();
         });
+
+        function setRules(){
+            jQuery.validator.addMethod("checkName", function(value, elem){ // value=欄位內容, elem為欄位元素
+                var nameRule = /^[A-z]+\w/;
+                if(!value.match(nameRule)) {
+                    $("#usr").focus();
+                    return false;
+                }
+            });
+            jQuery.validator.addMethod("checkPassword", function(value, elem){ // value=欄位內容, elem為欄位元素
+                var passwdRule = /[a-zA-Z0-9]+/;
+                if(!value.match(passwdRule)) {
+                    $("#passwd").focus();
+                    return false;
+                }
+            });
+            jQuery.validator.addMethod("confirmPasswd", function(value, elem){ // value=欄位內容, elem為欄位元素
+                var passwd = $("#passwd").val();
+                if(value != passwd) {
+                    $("#passwd2").focus();
+                    return false;
+                }
+            });
+        }
         
         $("#stYy").change(function(){
             checkSelectIsNotDefault_YearAndMonth();
@@ -279,17 +306,77 @@
 			$("input[id !='submit'][id !='clear']").val("");
 
 		});
-        
-        $("#form1").validate({
-            submitHandler: function(form) {
-            $(form).submit();
-            }
+
+        $(function(){
+            $("#form1").validate({
+                rules: {
+                    usr: {
+                        required: true,
+                        checkName: true
+                    },
+                    passwd: {
+                        required: true ,
+                        checkPassword: true
+                    },
+                    passwd2: {
+                        required: true,
+                        equalTo: "#passwd"
+                    },
+                    fn: {
+                        required: true
+                    },
+                    ln: {
+                        required: true
+                    },
+                    birth: {
+                        required: true,
+                        date: true
+                    },
+                    phone: {
+                        required: true
+                    },
+                    mail: {
+                        required: true,
+                        email: true
+                    }
+                },
+                messages: {
+                    usr: {
+                        required: "Please enter your name.",
+                        checkName: "Your name is wrong."
+                    },
+                    passwd: {
+                        required: "Please enter your password.",
+                        checkPassword: "Your name is wrong."
+                    },
+                    passwd2: {
+                        required: "Please confirm your password.",
+                        equalTo: "Password is not the same."
+                    },
+                    fn: {
+                        required: "Please enter your first name."
+                    },
+                    ln: {
+                        required: "Please enter your last name."
+                    },
+                    birth: {
+                        required: "Please enter your birthday."
+                    },
+                    phone: {
+                        required: "Please enter your cell phone number."
+                    },
+                    mail: {
+                        required: "Please enter your email.",
+                        email: "Your email is wrong."
+                    }
+                }
+            });
         });
+        
+        
         
         function check(){
             console.log("check");
-            $("#form1").validate();
-
             
         }
         
