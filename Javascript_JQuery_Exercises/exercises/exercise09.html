@@ -12,6 +12,7 @@
     <title>Exercise 09 - Elective System</title>
     <script type="text/javascript" src="../jquery.js"></script>
     <script type="text/javascript" src="../jquery.cookie.js"></script>
+    <script type="text/javascript" src="../json2.js"></script>
 </head>
 
 <body>
@@ -142,7 +143,7 @@
                                     </tr>
                                     <tr>
                                         <td colspan="2">
-                                            <input type="button" value="選課" onClick="alert('選課成功!')" />
+                                            <input type="button" value="選課" onClick="selectCourse()" />
                                         </td>
                                     </tr>
                                 </table>
@@ -150,7 +151,7 @@
                         </tr>
                     </table>
 
-                    <input type="button" value="已選課程" onClick="window.open('exercise9-2.html')" />
+                    <input type="button" value="已選課程" onClick="window.open('exercise09-2.html')" />
                     <script type="text/javascript">
                     </script>
 
@@ -170,53 +171,74 @@
         var SUGGEST_URL = "http://192.168.0.105:9099/suggest.php?key="; 
         var SEARCH_URL = "http://192.168.0.105:9099/search.php?key="; 
         var SCHEDULE_URL = "http://192.168.0.105:9099/schedule.php?ser_no=";
-        $(document).ready(function() {
-            
+        var items;
+
+        $(document).ready(function(){
+            $("#ser_no").val("");
+            $("#credit").val("");
+            $("#cou_cname").val("");
+            $("#tea_cname").val("");
+            $("#daytime").val("");
         });
         
-        $("#keyword").keypress(function() {
+        // $("#suggest")會有閃爍的情形，如:輸入a special study, 還沒驗證輸入的格式(正規表示)
+        $("#keyword").keyup(function() {
             //$("#keyword").val($("#keyword").val().replace(/[^a-zA-Z]/g,''));
             
             if($("#search_course").html() != null)
                 $("#search_course").remove();
-            
+            var keyword = $(this).val();
             var tempURL = SUGGEST_URL + $("#keyword").val();
             $.ajax({
                 url: tempURL,
+                type: "GET",
                 success: function(result){
-                    console.log(result);
-                    $("#suggest").append($("<p></p>").attr("id", "search_course").text(result));
+                    if(result != "")
+                        $("#suggest").append($("<p></p>").attr("id", "search_course").text(result));
                 }
             });
         });
         
-        var items = [];
-        $("#searchBtn").click(function(){
+        $("#searchBtn").click(function(){ 
             console.log("search");
             var tempURL = SEARCH_URL + $("#keyword").val();
             $.ajax({
                 url: tempURL,
                 type: "GET",
-                dataType: "json",
-                async: false,
                 success: function(result){
-                    $.each(result, function(key, val){
-                        var tr = $("#serch_result").after($("<tr></tr>"));
-                        tr.after($("<td></td>").text(key));
-                        tr.after($("<td></td>").text(val));
-                        //items.push(key);
-                        //items.push(val);
-                    });
-                    /*
-                    for(var i = 0; i < items.length; i++) {
-                        console.log(items[i]);
-                        tr = $("#search_result").append($("<tr></tr>"));
-                        tr.append($("<td></td>").text(items[i]));
+                    if(result) {
+                        items = JSON.parse(result);
                     }
-                    */
+                    updateSearchResult();
                 }
             });
-        });
+        }); // end of $("#searchBtn").click
+
+        function updateSearchResult(){
+            $.each(items.CourseList, function(i, item){
+                $("#serch_result").append($("<tr ser_no='" + item["ser_no"] + 
+                    "' credit='" + item["credit"] + 
+                    "' daytime='" + item["daytime"] + 
+                    "' onclick='showSearchResult(" + item["ser_no"] + ")' ></tr>").text(item["cou_cname"] + " " + item["tea_cname"]));
+            });
+        }
+
+        function showSearchResult(ser_no){
+            for(var i = 0; i < items.CourseList.length; i++) {
+                if(items.CourseList[i].ser_no == ser_no) {
+                    $("#ser_no").val(items.CourseList[i].ser_no);
+                    $("#credit").val(items.CourseList[i].credit);
+                    $("#cou_cname").val(items.CourseList[i].cou_cname);
+                    $("#tea_cname").val(items.CourseList[i].tea_cname);
+                    $("#daytime").val(items.CourseList[i].daytime);
+                    break;
+                }
+            }
+        }
+
+        function selectCourse(){
+            alert('選課成功!');
+        }
         
         
     </script>

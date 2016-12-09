@@ -70,7 +70,7 @@
                     <table height="200px" width="700px">
                         <tr>
                             <td colspan=2>User Name:
-                                <input type="text" id="usr" maxlength="12" size="13" name="usr" class="required checkName">
+                                <input type="text" id="usr" maxlength="12" size="13" name="usr" >
                             </td>
                         </tr>
                         <tr>
@@ -160,25 +160,16 @@
 
         function setRules(){
             jQuery.validator.addMethod("checkName", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var nameRule = /^[A-z]+\w/;
-                if(!value.match(nameRule)) {
-                    $("#usr").focus();
-                    return false;
-                }
+                var nameRule = /^[a-zA-Z].*/;
+                return value.match(nameRule);
             });
             jQuery.validator.addMethod("checkPassword", function(value, elem){ // value=欄位內容, elem為欄位元素
                 var passwdRule = /[a-zA-Z0-9]+/;
-                if(!value.match(passwdRule)) {
-                    $("#passwd").focus();
-                    return false;
-                }
+                return value.match(passwdRule);
             });
             jQuery.validator.addMethod("confirmPasswd", function(value, elem){ // value=欄位內容, elem為欄位元素
                 var passwd = $("#passwd").val();
-                if(value != passwd) {
-                    $("#passwd2").focus();
-                    return false;
-                }
+                return value == passwd;
             });
         }
         
@@ -307,40 +298,39 @@
 
 		});
 
-        $(function(){
-            $("#form1").validate({
-                rules: {
-                    usr: {
-                        required: true,
-                        checkName: true
-                    },
-                    passwd: {
-                        required: true ,
-                        checkPassword: true
-                    },
-                    passwd2: {
-                        required: true,
-                        equalTo: "#passwd"
-                    },
-                    fn: {
-                        required: true
-                    },
-                    ln: {
-                        required: true
-                    },
-                    birth: {
-                        required: true,
-                        date: true
-                    },
-                    phone: {
-                        required: true
-                    },
-                    mail: {
-                        required: true,
-                        email: true
-                    }
+        $("#form1").validate({
+            rules: {
+                usr: {
+                    required: true,
+                    checkName: true
                 },
-                messages: {
+                passwd: {
+                    required: true ,
+                    checkPassword: true
+                },
+                passwd2: {
+                    required: true,
+                    equalTo: "#passwd"
+                },
+                fn: {
+                    required: true
+                },
+                ln: {
+                    required: true
+                },
+                birth: {
+                    required: true,
+                    date: true
+                },
+                phone: {
+                    required: true
+                },
+                mail: {
+                    required: true,
+                    email: true
+                }
+            },
+            messages: {
                     usr: {
                         required: "Please enter your name.",
                         checkName: "Your name is wrong."
@@ -369,17 +359,32 @@
                         required: "Please enter your email.",
                         email: "Your email is wrong."
                     }
+                },
+                submitHandler: function(form){
+                    form.submit();
                 }
             });
-        });
-        
-        
         
         function check(){
-            console.log("check");
-            
+            var userInfo = "";
+            var usr = $("#usr").val();
+            var passwd = $("#passwd").val();
+            var fn = $("#fn").val();
+            var ln = $("#ln").val();
+            var birth = $("#birth").val();
+            var phone = $("#phone").val();
+            var email = $("#mail").val();
+            userInfo = userInfo +
+                        "username: " + usr + "\n" +
+                        "password: " + passwd + "\n" +
+                        "first name: " + fn + "\n" +
+                        "last name: " + ln + "\n" +
+                        "birth: " + birth + "\n" +
+                        "phone: " + phone + "\n" +
+                        "email: " + email + "\n";
+            alert(userInfo);
+            return false;
         }
-        
     </script>
 </body>
 

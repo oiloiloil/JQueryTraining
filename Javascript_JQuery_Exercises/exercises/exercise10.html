@@ -281,7 +281,6 @@
             if(name.search(nameRule) == -1){
                 alert("username輸入錯誤");
                 $("#usr").focus();
-                return false;
             }
             // 數字加標點符號會通過 ex.123--+
             var passwd = $("#passwd").val();
@@ -290,7 +289,6 @@
             if(passwd.search(passwdRule) == -1){
                 alert("password輸入錯誤");
                 $("#passwd").focus();
-                return false;
             }
             
             var passwd2 = $("#passwd2").val();
@@ -298,7 +296,6 @@
             if(passwd2 != passwd) {
                 alert("password confirm輸入錯誤");
                 $("#passwd2").focus();
-                return false;
             }
             
             var email = $("#mail").val();
@@ -306,17 +303,32 @@
             if(email.search(mailRule) == -1){
                 alert("email輸入錯誤");
                 $("#mail").focus();
-                return false;
             }
 
             if($("#stYy").find(":selected").text() > $("#edYy").find(":selected").text() ||
                $("#stMm").find(":selected").text() > $("#edMm").find(":selected").text() ||
                $("#stDd").find(":selected").text() > $("#edDd").find(":selected").text()) {
                 alert("日期輸入錯誤");
-                return false;
             }
 
-            return true;
+            var userInfo = "";
+            var usr = $("#usr").val();
+            //var passwd = $("#passwd").val();
+            var fn = $("#fn").val();
+            var ln = $("#ln").val();
+            var birth = $("#birth").val();
+            var phone = $("#phone").val();
+            //var email = $("#email").val();
+            userInfo = userInfo +
+                        "username: " + usr + "\n" +
+                        "password: " + passwd + "\n" +
+                        "first name: " + fn + "\n" +
+                        "last name: " + ln + "\n" +
+                        "birth: " + birth + "\n" +
+                        "phone: " + phone + "\n" +
+                        "email: " + email + "\n";
+            alert(userInfo);
+            return false;
         }
 		
 	</script>
