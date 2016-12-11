@@ -237,6 +237,8 @@
 
         function selectCourse(){
             alert('選課成功!');
+            $.cookie("basket-data", JSON.stringify($("#ser_no").val()));
+            JSON.parse($.cookie("basket-data")); // 從cookie取出JSON資料
         }
 
         function autoPutResult() {
