@@ -74,13 +74,14 @@
         </div>
     </div>
     <script>
-        var myData = [{sid: 1, stu_id: 1, stu_name: "oil", tea_name: "josh", course: "c", semester: "1", score: "70"},
-                    {sid: 2, stu_id: 2, stu_name: "john", tea_name: "josh", course: "c", semester: "1", score: "60"},
-                    {sid: 3, stu_id: 3, stu_name: "amy", tea_name: "josh", course: "c", semester: "1", score: "50"},
-                    {sid: 4, stu_id: 5, stu_name: "brad", tea_name: "frank", course: "e", semester: "2", score: "80"},
-                    {sid: 5, stu_id: 7, stu_name: "adam", tea_name: "frank", course: "e", semester: "2", score: "90"},
-                    {sid: 6, stu_id: 9, stu_name: "nicole", tea_name: "frank", course: "e", semester: "2", score: "10"}];
+        var myData = [{sid: 1, stu_id: 1, stu_name: "oil", tea_name: "josh", course: "c", semester: "1", score: 70},
+                    {sid: 2, stu_id: 2, stu_name: "john", tea_name: "josh", course: "c", semester: "1", score: 60},
+                    {sid: 3, stu_id: 3, stu_name: "amy", tea_name: "josh", course: "c", semester: "1", score: 50},
+                    {sid: 4, stu_id: 5, stu_name: "brad", tea_name: "frank", course: "e", semester: "2", score: 80},
+                    {sid: 5, stu_id: 7, stu_name: "adam", tea_name: "frank", course: "e", semester: "2", score: 90},
+                    {sid: 6, stu_id: 9, stu_name: "nicole", tea_name: "frank", course: "e", semester: "2", score: 10}];
 
+        jQuery("#grid_id").jqGrid('navGrid',{edit:false,add:false,del:false});
         $(document).ready(function(){            
             $("#grid_id").jqGrid({
                 datatype: "local",
@@ -92,7 +93,8 @@
                            {name:'tea_name',index:'tea_name', width:100, editable: true},
                            {name:'course',index:'course', width:100, editable: true},
                            {name:'semester',index:'semester', width:80, editable: true},
-                           {name:'score',index:'score', width:80,sorttype:false, editable: true}],
+                           {name:'score',index:'score', width:80,sorttype:false, editable: true, formatter: 'number', 
+                                formatoptions:{decimalSeparator:".", thousandsSeparator: ",", decimalPlaces: 1, defaulValue: "0"}}],
                 rowNum: 10,
                 rowList: [10,20,30],
                 sortname: 'sid',
@@ -112,14 +114,15 @@
             console.log("edit data");
             var index; 
             index = $("#grid_id").jqGrid('getGridParam','selrow');
+            console.log(index);
             $("#grid_id").jqGrid('editRow', index);
-            if($("#save_data").html() == null)
+            if(index != null && $("#save_data").html() == null)
                 $("div [class='main']").append($("<input type='button' id='save_data' value='save data' onclick='saveData()'/>"));
         });
         
         $("#add_data").click(function(){
             var index = $("#grid_id").jqGrid("getGridParam", "records");
-            $("#grid_id").jqGrid('addRowData', index + 1, {sid: index + 1, stu_id: 0, stu_name: "", tea_name: "", course: "", semester: "", score: ""});
+            $("#grid_id").jqGrid('addRowData', index + 1, {sid: index + 1, stu_id: 0, stu_name: "", tea_name: "", course: "", semester: "", score: 0});
             console.log("add data");
             
         });
@@ -136,8 +139,8 @@
             console.log("save data");
             var index = $("#grid_id").jqGrid('getGridParam','selrow');
             console.log(index);
-            $("#grid_id").jqGrid('saveRow', index);
-            $("#save_data").remove();
+            $("#grid_id").jqGrid('saveRow', index, false, "clientArray");
+            //$("#save_data").remove();
         }
 
     </script>

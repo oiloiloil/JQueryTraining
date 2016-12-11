@@ -63,27 +63,32 @@
         </div>
     </div>
 	<script>
-		var delayTime = 5000;
-		var myVar = setInterval("updatePicture_auto()", delayTime);
+		var delayTime = 5000; // delay for 5s
 		var picIndex = 1;
+        var myVar = setInterval(updatePicture_auto, delayTime);
+
+        $(document).ready(function(){
+            $("#planetmap").hover(function() { // monse hover in 
+                console.log("hover in ");
+                clearInterval(myVar);
+            },function() { // mouse hover out
+                console.log("hover out ");
+                myVar = setInterval(updatePicture_auto, delayTime);
+            });
+        });
 		
-		$("#planetmap").hover(function() { // monse hover in 
-			clearInterval(myVar);
-		},function() { // mouse hover out
-			myVar = setInterval("updatePicture_auto()", delayTime);
-		});
+		
 		
 		$("#planetmap").on("mousemove",function(event) {
-			console.log("pagex: " + event.pageX + " pagey: " + event.pageY);
 			updatePicture_hover(event.pageY);
 		});
 		
 		function updatePicture_auto() {
-			var picPath = "img/ex5ad" + picIndex + ".jpg";
-			$("#ad").attr("src", picPath);
 			picIndex = picIndex + 1;
-			if(picIndex > 3)
-				picIndex = picIndex - 3;
+            if(picIndex > 3)
+                picIndex = picIndex - 3;
+            var picPath = "img/ex5ad" + picIndex + ".jpg";
+			$("#ad").attr("src", picPath);
 		}
 		
 		function updatePicture_hover(coordY) {

@@ -131,6 +131,11 @@
         </div>
     </div>
 	<script>
+        $(document).ready(function() {
+            $("#card").attr("style", "overflow:hidden");
+            $("#card2").attr("style", "overflow:hidden");
+        });
+
 		var lockCardFlag = false;
 		function changeStyle(id) {
 			removeCardXYZStyle();
@@ -156,9 +161,10 @@
 		function lock() {
 			lockCardFlag = !lockCardFlag;
 			if(lockCardFlag) {
+                var text = "";
 				$("#button1").val(" 解除鎖定 ");
 				$("#text").prop('disabled', true);
-				$("#card").text($("#text").val());
+                $("#card").text($("#text").val());
 			}
 			else {
 				$("#button1").val(" 鎖定文字 ");

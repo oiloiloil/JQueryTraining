@@ -62,17 +62,24 @@
 			var sec_alarm = $("#sec :selected").text();
 			
 			if(clockType = "once") {
+                /*
+                var alarmTime = setTestTime();
+                hr_alarm = alarmTime.hr;
+                min_alarm = alarmTime.min;
+                sec_alarm = alarmTime.sec;
+                */
+                clearInterval(alarmClock);
 				alarmClock = setInterval(function() {
 					if(hr == hr_alarm && min == min_alarm && sec == sec_alarm) {
 						var press = confirm("Alarm Clock.");
 						if(press == true){
-							clearInterval(alarmClock);
+							//clearInterval(alarmClock);
 							console.log("wait for 10 sec");
 							repeatAlarmClock();
 						}	
 						else{
 							console.log("The alarm is end.");
-							clearInterval(alarmClock);
+							//clearInterval(alarmClock);
 						}
 					}
 				}, delayTime); 
@@ -108,7 +115,26 @@
 					}
 				}, delayTime);
 			}
-		}
+		} // end of setAlarmClock()
+
+        function setTestTime() {
+            var alarm = {hr: -1, min: -1, sec: -1};
+            alarm.sec = sec + 10;
+            alarm.min = min;
+            alarm.hr = hr;
+            if(sec_alarm >= 60) {
+                sec_alarm = sec_alarm - 60;
+                min_alarm++;
+            }
+            if(min_alarm >= 60) {
+                min_alarm = min_alarm - 60;
+                hr_alarm++;
+            }
+            if(hr_alarm >= 24) {
+                hr_alarm = hr_alarm - 24;
+            }
+            return alarm;
+        }
 		
 		function repeatAlarmClock() {
 			var sec_alarm = sec + 10;

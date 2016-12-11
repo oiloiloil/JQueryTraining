@@ -117,12 +117,17 @@
 			$("#list2").empty();
 		});
 		
+        var inputRules = /\s/; // 空白字元
 		$("#add1").click(function() {
-			$("#list1").append($("<option></option>").attr("value", "").text($("#input1").val()));
+            var text = $("#input1").val();
+            if(text != "" && !text.match(inputRules))
+                $("#list1").append($("<option></option>").attr("value", "").text(text));
 		});
 		
 		$("#add2").click(function() {
-			$("#list2").append($("<option></option>").attr("value", "").text($("#input2").val()));
+            var text = $("#input1").val();
+            if(text != "" && !text.match(inputRules))
+                $("#list2").append($("<option></option>").attr("value", "").text(text));
 		});
 		
 		$("#del1").click(function() {

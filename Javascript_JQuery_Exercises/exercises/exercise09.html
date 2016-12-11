@@ -183,8 +183,6 @@
         
         // $("#suggest")會有閃爍的情形，如:輸入a special study, 還沒驗證輸入的格式(正規表示)
         $("#keyword").keyup(function() {
-            //$("#keyword").val($("#keyword").val().replace(/[^a-zA-Z]/g,''));
-            
             if($("#search_course").html() != null)
                 $("#search_course").remove();
             var keyword = $(this).val();
@@ -193,8 +191,9 @@
                 url: tempURL,
                 type: "GET",
                 success: function(result){
-                    if(result != "")
-                        $("#suggest").append($("<p></p>").attr("id", "search_course").text(result));
+                    if(result != "") {
+                        $("#suggest").append($("<p onclick='autoPutResult()'></p>").attr("id", "search_course").text(result));
+                    }
                 }
             });
         });
@@ -238,6 +237,10 @@
 
         function selectCourse(){
             alert('選課成功!');
+        }
+
+        function autoPutResult() {
+            $("#keyword").val($("#search_course"));
         }
         
         

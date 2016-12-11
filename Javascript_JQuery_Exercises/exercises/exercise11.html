@@ -149,6 +149,8 @@
     <script>
         var idArray = ["usr", "passwd", "passwd2", "fn", "ln", "phone", "mail"];
         var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 29為閏年
+        var startYear = 2006; // 目前年份的前後10年
+        var endYear = 2026;
         
         $(document).ready(function(){
             setRules();
@@ -160,12 +162,16 @@
 
         function setRules(){
             jQuery.validator.addMethod("checkName", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var nameRule = /^[a-zA-Z].*/;
+                var nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]/;
                 return value.match(nameRule);
             });
             jQuery.validator.addMethod("checkPassword", function(value, elem){ // value=欄位內容, elem為欄位元素
                 var passwdRule = /[a-zA-Z0-9]+/;
                 return value.match(passwdRule);
+            });
+            jQuery.validator.addMethod("checkPhone", function(value, elem){ // value=欄位內容, elem為欄位元素
+                var phoneRule = /^(09)[0-9]{8}/;
+                return value.match(phoneRule);
             });
             jQuery.validator.addMethod("confirmPasswd", function(value, elem){ // value=欄位內容, elem為欄位元素
                 var passwd = $("#passwd").val();
@@ -175,7 +181,7 @@
         
         $("#stYy").change(function(){
             checkSelectIsNotDefault_YearAndMonth();
-            checkSelectIsNotDefault_StartYMD();
+            checkSelectIsNotDefault_StartYMD(); // 起始日期都非"請選擇"，自動調整最後日期
         });
         $("#stMm").change(function(){
             checkSelectIsNotDefault_YearAndMonth();
@@ -200,34 +206,43 @@
             var startM = $("#stMm").find(":selected").text();
             var startD = $("#stDd").find(":selected").text();
             
-            var endY;
-            var endM;
-            var endD;
+            var endY = startY; // 先假設endY和endM和endD不會因為天數加1而進位，後面再進行確認
+            var endM = startM;
+            var endD = startD;
             
             if(startM == 2 && isLunarYear(startY)) {
                 endD = parseInt(startD) + 1;
                 if(endD > days[12]) {
-                    endM = startM + 1;
+                    endD = 1;
+                    endM = parseInt(startM) + 1;
                     if(endM > 12) {
-                        endY = startY + 1;
+                        endM = 1;
+                        endY = parseInt(startY) + 1;
                     }
                 }
+            }
+            else if(isEndDateOver(endY, endM, endD)) {
+                endY = endYear;
+                endM = 12;
+                endD = 31;
             }
             else {
                 endD = parseInt(startD) + 1;
                 if(endD > days[startM - 1]) {
-                    endM = startM + 1;
+                    endD = 1;
+                    endM = parseInt(startM) + 1;
                     if(endM > 12) {
-                        endY = startY + 1;
+                        endM = 1;
+                        endY = parseInt(startY) + 1;
                     }
                 }
             }
-            
+
             $("#edYy option").filter(function(){
-                return $(this).text() == startY;
+                return $(this).text() == endY;
             }).attr("selected", true);
             $("#edMm option").filter(function(){
-                return $(this).text() == startM;
+                return $(this).text() == endM;
             }).attr("selected", true);
             putDayInSelect_end();
             $("#edDd option").filter(function(){
@@ -236,8 +251,6 @@
         }
         
         function putYearInSelect(){
-            var startYear = 2006; // 目前年份的前後10年
-            var endYear = 2026;
             for(var i = startYear; i <= endYear; i++) {
                 $("#stYy").append($("<option></option>").text(i));
                 $("#edYy").append($("<option></option>").text(i));
@@ -278,9 +291,13 @@
                  $("#edDd").append($("<option></option>").text(i));
             }
         }
+        function isEndDateOver(endY, endM, endD) {
+            if(endY == endYear && endM == 12 && endD == 31)
+                return true;
+        }
         
         $(function(){
-            $("#birth").datepicker();
+            $("#birth").datepicker({dateFormat:"yy/mm/dd"});
         });
         
         $("input").keypress(function(){
@@ -293,10 +310,15 @@
             }
         });
         
-		$("#clear").click(function(){
-			$("input[id !='submit'][id !='clear']").val("");
-
-		});
+        $("#clear").click(function(){
+            $("input[id !='submit'][id !='clear']").val("");
+            $("#stYy").get(0).selectedIndex = 0; // 選取select 的第一個option
+            $("#stMm").get(0).selectedIndex = 0;
+            $("#edYy").get(0).selectedIndex = 0;
+            $("#edMm").get(0).selectedIndex = 0;
+            $("#stDd option[value != '請選擇']").remove();
+            $("#edDd option[value != '請選擇']").remove();
+        });
 
         $("#form1").validate({
             rules: {
@@ -323,7 +345,8 @@
                     date: true
                 },
                 phone: {
-                    required: true
+                    required: true,
+                    checkPhone: true
                 },
                 mail: {
                     required: true,
@@ -353,7 +376,8 @@
                         required: "Please enter your birthday."
                     },
                     phone: {
-                        required: "Please enter your cell phone number."
+                        required: "Please enter your cell phone number.",
+                        checkPhone: "電話格式錯誤"
                     },
                     mail: {
                         required: "Please enter your email.",
