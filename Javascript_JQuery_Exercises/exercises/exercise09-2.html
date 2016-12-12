@@ -46,12 +46,12 @@
                                     <!-- 搜尋結果的課程名稱以一行一個課程顯示在這兒 -->
                                     <tr>
                                         <td>
-                                            <a>範例課程A</a>
+                                            <!--<a>範例課程A</a>-->
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>
-                                            <a>範例課程B</a>
+                                            <!--<a>範例課程B</a>-->
                                         </td>
                                     </tr>
                                 </table>
@@ -117,9 +117,46 @@
         </div>
     </div>
     <script>
+        var SCHEDULE_URL = "http://192.168.0.105:9099/schedule.php?ser_no=";
+        var items = [];
+
         $(document).ready(function() {
-            console.log(JSON.parse($.cookie("basket-data")));
+            var text = JSON.parse($.cookie("basket-data"));
+            $.each(text, function(i, value) {
+                console.log(value);
+
+                var tempURL = SCHEDULE_URL + value.substr(1, value.length - 2);
+                $.ajax({
+                    url: tempURL,
+                    type: "GET",
+                    success: function(result){
+                        console.log(result);
+                        var obj = JSON.parse(result);
+                        items.push(obj);
+                        updateSearchResult(obj);
+                    }
+                });
+            });
         });
+
+        function updateSearchResult(result){
+            $("#serch_result").append($("<tr ser_no='" + result.ser_no + 
+                "' credit='" + result.credit + 
+                "' daytime='" + result.daytime + 
+                "' onclick='showSearchResult(" + result.ser_no + ")' ></tr>").text(result.cou_cname + " " + result.tea_cname));
+        }
+
+        function showSearchResult(ser_no){
+            $.each(items, function(i, value) {
+                if(value.ser_no == ser_no) {
+                    $("#ser_no").val(value.ser_no);
+                    $("#credit").val(value.credit);
+                    $("#cou_cname").val(value.cou_cname);
+                    $("#tea_cname").val(value.tea_cname);
+                    $("#daytime").val(value.daytime);
+                }
+            });
+        }
     </script>
 </body>
 

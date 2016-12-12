@@ -1,19 +1,19 @@
-Question1:
+Question1:列出位在台北市的客戶ID。
 	SELECT CustomerID FROM Customers WHERE City='台北市';
 
-Question2:
+Question2:列出胡椒粉、海鮮粉及辣椒粉的總庫存。
 	SELECT SUM(UnitsInStock) FROM Products WHERE ProductName IN('胡椒粉','海鮮粉','辣椒粉');
 
-Question3:
+Question3:列出所有性別是小姐且職稱是業務的員工姓名並依姓名排序。
 	SELECT EmployeeName FROM Employees WHERE TitleOfCourtesy='小姐' AND Title='業務' ORDER BY EmployeeName;
 
-Question4:
+Question4:列出曾在2004年（以OrderDate為主）處理訂單的員工ID（不得重複）並排序。
 	SELECT DISTINCT EmployeeID FROM Orders WHERE year(OrderDate)='2004';
 
-Question5:
+Question5:列出處理2003年的前十筆訂單（以OrderDate排序）的員工ID。
 	SELECT TOP 10 EmployeeID FROM Orders WHERE year(OrderDate)='2003' ORDER BY OrderDate;
 
-Question6:
+Question6:列出地址在屏東且提供至少三樣產品的供應商ID並排序。
 	/*
 	先選取位於屏東的供應商，以及使用COUNT()計算這些供應商提供的產品數量，將這個結果設為Tab，接著在外層選取產品數量>=3Tab的供應商ID
 	*/
@@ -22,13 +22,13 @@ Question6:
 		WHERE S.City LIKE '屏東%' AND P.SupplierID = S.SupplierID GROUP BY S.SupplierID) Tab
 	WHERE Tab.S_Count >= 3;
 
-Question7:
+Question7:查詢林姓員工的數量。
 	/*
 	從Employees計算林姓員工的數量
 	*/
 	SELECT count(EmployeeID) AS EmpCount FROM Employees WHERE EmployeeName LIKE '林%';
 
-Question8:
+Question8:列出不提供肉/家禽類和海鮮類產品的供應商CompanyName並排序。
 	/*
 	從供應商裡選取沒有提供'肉/家禽'、'海鮮'這兩中產品類別的公司名稱，在WHERE的條件裡先確認有提供'肉/家禽'、'海鮮'的供應商ID
 	接著找出不存在上述結果的供應商，並以公司名稱進行排序
@@ -41,7 +41,7 @@ Question8:
 									AND S.SupplierID = P.SupplierID)
 		ORDER BY S.CompanyName;
 
-Question9:
+Question9:列出每項產品類別共有多少產品（欄位：類別名稱、數量）並以CategoryID排序。
 	/*
 	先計算每個類別有多少項產品AS Num，結果存為Tab，接著在外層選取類別名稱以及各類別的產品數量，並以類別ID排序
 	*/
@@ -52,7 +52,7 @@ Question9:
 			GROUP BY C.CategoryName, C.CategoryID) Tab
 	ORDER BY Tab.CategoryID;
 
-Question10:
+Question10:列出在2004年曾經購買過每一種類別至少一項產品的客戶ID並排序。
 	/*
 	Tab: 挑出下單日期為2004的結果，欄位為類別ID和顧客ID，利用GROUP BY避免重複出現每個顧客購買相同類型產品的結果(GROUP BY C.CategoryID, O.CustomerID)
 	Tab2: 計算在Categories有多少項類別，將結果存為C-Count
@@ -70,9 +70,10 @@ Question10:
 	HAVING COUNT(Tab.CustomerID) >= Tab2.C_Count
 	ORDER BY Tab.CustomerID;
 
-Question11:
+Question11:依照年度（OrderDate）列出該年度訂單總數、總訂單金額（UnitPrice * Quantity * (1-Discount)）、平均每筆訂單金額（金額皆四捨五入至小數點後第二位）並以總金額排序由大到小排序。
 	/*
-	Tab1: 
+	Tab1: 根據YEAR(OrderDate)確認每一年的定單數量有多少(COUNT(Tab1.Years))。
+	在最外層計算每一年的訂單的獲利總和以及平均每一年的獲利為多少(將全部年的獲利加總除於有多少年)
 	*/
 	SELECT Tab1.Years AS Years, Tab1.Counts AS Counts, ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)), 2) AS PriceSum,
 		ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)) / Tab1.Counts, 2) AS PriceAverage
@@ -84,7 +85,7 @@ Question11:
 		GROUP BY Tab1.Years, Tab1.Counts
 		ORDER BY PriceSum DESC;
 
-Question12:
+Question12:列出在2002年負責20筆以上訂單的員工ID並以員工ID排序。
 	/*
 		Tab: 計算Orders裡訂單的日期在2002年的數量，儲存每項訂單的員工ID以及其所處理的2002訂單數量
 		挑選訂單數量 >= 20 的員工ID
@@ -103,8 +104,11 @@ Question12:
 		GROUP BY EmployeeId 
 	HAVING COUNT(Orders.CustomerID) >= 20; 
 
-Question13:
+Question13:分別列出每一年使用次數最多的貨運方式ID。
 	/*
+	Tab: 選取每一年，計算各年的運輸方式以及其次數(COUNT(O.ShipVia))
+	Tab1, Tab2: 每一年最多的運輸次數的方式
+	挑出Tab1運輸次數 == Tab2最大的運輸次數
 	*/
 	SELECT Tab1.Years, Tab1.ShipVia
 	FROM(SELECT Tab.Years, Tab.ShipVia, MAX(Tab.ShipVias) AS ShipVias
@@ -122,7 +126,7 @@ Question13:
 		HAVING Tab1.ShipVias = Max(Tab2.ShipVias)
 		ORDER BY Tab1.Years ASC;
 
-Question14:
+Question14:列出曾經處理過「凱誠國際顧問公司」和「師大貿易」的訂單的員工ID及姓名並以ID排序。
 	/*
 		選取負責公司名稱為'凱誠國際顧問公司'的員工ID和員工姓名，以及選取負責公司名稱為'師大貿易'的員工ID和員工姓名
 		將這兩個結果進行交集，能得到同時處理這兩家公司的員工ID和姓名，並以員工ID排序
@@ -136,13 +140,13 @@ Question14:
 	WHERE O.CustomerID = C.CustomerID AND E.EmployeeID = O.EmployeeID AND C.CompanyName = '師大貿易'
 	ORDER BY E.EmployeeID;
 
-Question15:
+Question15:列出六月出生的員工姓名並排序。
 	/*
 	從Employees選取生日為6月的員工姓名，並以員工姓名排序
 	*/
 	SELECT EmployeeName From Employees WHERE month(BirthDate)='6' ORDER BY EmployeeName;
 
-Question16:
+Question16:列出送貨日期延誤的訂單編號（ShippedDate晚於RequiredDate）及延誤天數並以訂單編號排序。
 	/*
 	從Orders先確認ShippedDate > RequiredDate的結果，並選出OrderID和這筆Order的延遲時間
 	*/
@@ -150,9 +154,10 @@ Question16:
 	FROM Orders O
 	WHERE O.ShippedDate > O.RequiredDate;
 
-Question17:
+Question17:列出主管ID、姓名、薪資、其管理的下屬數量和下屬平均薪資。以主管ID排序。
 	/*
-	Tab: 
+	Tab: 利用兩個Employees table: E1, E2，找出主管的ID, 姓名, 薪水，主管屬下的姓名，薪水
+	在外層計算各主管其底下屬下的薪水總合以及平均薪水
 	*/
 	SELECT Tab.EmployeeID, Tab.Manager AS EmployeeName, Tab.ManagerSalary AS Salary, COUNT(Tab.EmployeeName) AS SubCount, AVG(Tab.Salary) AS SubAverageSalary
 	FROM(SELECT E1.EmployeeID, E1.EmployeeName AS Manager, E1.Salary AS ManagerSalary, E2.EmployeeName, E2.Salary
@@ -162,7 +167,8 @@ Question17:
 		GROUP BY Tab.EmployeeID, Tab.Manager, Tab.ManagerSalary
 		ORDER BY Tab.EmployeeID;
 
-Question18:
+Question18:列出產品編號、名稱、庫存量UnitsInStock、已訂購量UnitsOnOrder及安全存量ReorderLevel，並新增一欄位其值為'safe'（庫存量 >= 安全存量）
+	或'reordering'（庫存量 < 安全存量 & 已訂購量+庫存量 >= 安全存量）或'unsafe'（其他）。
 	/*
 	從Products裡選取ProductID, ProductName, UnitsInStock, UnitsOnOrder, ReorderLevel, Status
 	Status值的設定條件為:
@@ -179,7 +185,7 @@ Question18:
 			'Status'
 	FROM Products P;
 
-Question19:
+Question19:列出2004年三月總成交金額最多的5名員工ID及成交金額並以成交金額由大到小排序。
 	/*
 	WHERE的條件為訂單日期為2004年以及負責的月份為3月，從Orders和OrderDetails挑出前5為員工的ID以及他們負責訂單的總金額AS TotalPrice，以TotalPrice排序
 	*/
@@ -189,7 +195,7 @@ Question19:
 		GROUP BY O.EmployeeID
 		ORDER BY TotalPrice DESC;
 
-Question20:
+Question20:列出2003年平均每月訂單數。
 	/*
 	Tab: 選取在2003年每個月的訂單數量( COUNT( O.OrderID ) AS OrderCounts )。
 	利用AVG()計算Tab平均每個月的訂單數量
@@ -200,9 +206,8 @@ Question20:
 		WHERE YEAR(O.OrderDate) = '2003'
 			GROUP BY MONTH(O.OrderDate)) Tab;
 
-Question21:
+Question21:依照客戶的送貨城市列出各城市訂購的各種類別的訂單數量。以ShipCity及Category排序。
 	/*
-
 	*/
 	SELECT O.ShipCity, C.CategoryID, COUNT(P.ProductName) AS Cnt
 	FROM Orders O, OrderDetails OD, Products P, Categories C
@@ -210,8 +215,11 @@ Question21:
 		GROUP BY C.CategoryID, O.ShipCity
 		ORDER BY O.ShipCity;
 
-Question22:
+Question22:新增一trigger名為shippers_trigger，當對資料表Shippers進行新增、修改、刪除操作後，
+將操作紀錄到日誌表ShippersLog（已存在）
 	/*
+	先確認shippers_trigger是否存在，如果存在的話刪除這張表
+	建立trigger shippers_trigger，當Shippers執行insert, update, delete後會將改變的資料寫進ShippersLog
 	*/
 	IF OBJECT_ID('shippers_trigger','TR') IS NOT NULL
 		DROP TRIGGER shippers_trigger;
@@ -226,20 +234,74 @@ Question22:
 		END
 		ELSE IF EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		BEGIN
-			INSERT INTO ShippersLog SELECT GETDATE(), 'INSERT', 'NULL', 'NULL', 'NULL', * FROM inserted;
+			INSERT INTO ShippersLog SELECT GETDATE(), 'INSERT', NULL, NULL, NULL, * FROM inserted;
 		END	
 		ELSE IF NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted)
 		BEGIN
-			INSERT INTO ShippersLog SELECT GETDATE(), 'DELETE', *, 'NULL', 'NULL', 'NULL' FROM deleted;
+			INSERT INTO ShippersLog SELECT GETDATE(), 'DELETE', *, NULL, NULL, NULL FROM deleted;
 		END
 	END
 	GO
 
-Question23:
+Question23:調整薪資，全年處理50筆以上訂單的員工薪資加5%，處理100筆以上訂單則加10%，最多加5000元，且不得高於其主管。
 	/*
 	*/
-
-Question24:
+	WITH EmployeePays(EmployeeID, EmployeeName, Manager)
+	AS
+	(
+		SELECT E.EmployeeID, E.EmployeeName, E.ManagerID
+		FROM Employees E, Orders O
+		WHERE E.ManagerID IS NULL AND O.EmployeeID = E.EmployeeID
+		UNION ALL
+		SELECT E.EmployeeID, E.EmployeeName, E.ManagerID
+		FROM Employees E
+			INNER JOIN EmployeePays EP ON EP.EmployeeID = E.ManagerID
+	),
+	EmployeeLevel(EmployeeID, EmployeeName, Salary, Manager)
+	AS
+	(
+		SELECT EP.EmployeeID, EP.EmployeeName, E.Salary, EP.Manager
+		FROM EmployeePays EP, Employees E
+		WHERE EP.EmployeeID = E.EmployeeID
+			GROUP BY EP.EmployeeID, EP.EmployeeName, E.Salary, EP.Manager
+	),
+	EmployeeCnt(EmployeeID, EmployeeName, Cnt)
+	AS
+	(
+		SELECT E.EmployeeID, E.EmployeeName, COUNT(O.OrderID)
+		FROM Employees E, Orders O
+		WHERE O.EmployeeID = E.EmployeeID
+			GROUP BY E.EmployeeID, E.EmployeeName
+	),
+	EmployeePaySalary(EmployeeID, EmployeeName, Manager, Salary)
+	AS
+	(
+		SELECT EL.EmployeeID, EL.EmployeeName, EL.Manager, CASE
+		WHEN EC.Cnt > 100 AND EL.Salary * 1.1 - EL.Salary <= 5000 THEN EL.Salary * 1.1
+		WHEN EC.Cnt > 50 AND EL.Salary * 1.05 - EL.Salary <= 5000 THEN EL.Salary * 1.05
+		ELSE EL.Salary
+		END 'Salary'
+		FROM EmployeeLevel EL, EmployeeCnt EC
+		WHERE EL.EmployeeID = EC.EmployeeID AND EL.Manager IS NULL
+		UNION ALL
+		SELECT EL.EmployeeID, EL.EmployeeName, EL.Manager, CASE
+		WHEN EC.Cnt > 100 AND EL.Salary * 1.1 > EPS.Salary THEN EPS.Salary
+		WHEN EC.Cnt > 50 AND EL.Salary * 1.05 > EPS.Salary THEN EPS.Salary
+		WHEN EC.Cnt > 100 AND EL.Salary * 1.1 - EL.Salary > 5000 THEN EL.Salary + 5000
+		WHEN EC.Cnt > 50 AND EL.Salary * 1.05 - EL.Salary > 5000 THEN EL.Salary + 5000
+		WHEN EC.Cnt > 100 AND EL.Salary * 1.1 - EL.Salary <= 5000 THEN EL.Salary * 1.1
+		WHEN EC.Cnt > 50 AND EL.Salary * 1.05 - EL.Salary <= 5000 THEN EL.Salary * 1.05
+		ELSE EL.Salary
+		END 'Salary'
+		FROM EmployeeLevel EL, EmployeeCnt EC, EmployeePaySalary EPS
+		WHERE EL.EmployeeID = EC.EmployeeID AND EL.Manager = EPS.EmployeeID
+	)
+	UPDATE Employees
+	SET Salary = EPS.Salary
+	FROM EmployeePaySalary EPS
+	WHERE Employees.EmployeeID = EPS.EmployeeID
+	
+Question24:在員工資料表中新增一欄位Seniority，其型態為int，值為該員工工作至2004-12-31的年資 (月份數、不足月不算) 。
 	/*
 	將Employees加上Seniority，type為integer，
 	接著更新每個員工到'2004-12-31'的年資
@@ -249,7 +311,7 @@ Question24:
 	UPDATE Employees 
 	SET Employees.Seniority = DATEDIFF(mm, Employees.HireDate, '2004-12-31')
 
-Question25:
+Question25:從Products表中刪除不再銷售的產品資訊。
 	/*
 	刪除Products裡Discontinued = 1的資料
 	*/
