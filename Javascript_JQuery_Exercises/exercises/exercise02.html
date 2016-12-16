@@ -109,45 +109,80 @@
         </div>
     </div>
 	<script>
-		$("#each").click(function(){
-			console.log($("#color").val());
-			$("li").each(function(index){
-				$(this).css("color" ,$("#color").val());
-			});
+        var type1 = 1; // type1: 類型1，不需選擇x=?
+        var type2 = 2; // type2: 類型2，需要選擇x=? 才會將指定的元件改變顏色
+		$("#each").click(function() { // 全部變色
+            if(checkColorAndOrder(type1)) {
+                $("li").each(function(index) {
+                    $(this).css("color" ,$("#color").val());
+                });
+            }
 		});
-		$("#first").click(function(){
-			$("li").first().css("color" ,$("#color").val());
+
+		$("#first").click(function() { // 第一個變色
+            if(checkColorAndOrder(type1))
+                $("li").first().css("color" ,$("#color").val());
 		});
-		$("#last").click(function(){
-			$("li").last().css("color" ,$("#color").val());
+
+		$("#last").click(function() { // 最後一個變色
+			if(checkColorAndOrder(type1))
+                $("li").last().css("color" ,$("#color").val());
 		});
-		$("#odd").click(function(){
-			$("li").filter(" :odd").css("color" ,$("#color").val());
+
+		$("#odd").click(function() { // 基數變色
+            if(checkColorAndOrder(type1))
+                $("li").filter(" :odd").css("color" ,$("#color").val());
 		});
-		$("#even").click(function(){
-			$("li").filter(" :even").css("color" ,$("#color").val());
+
+		$("#even").click(function() { // 偶數變色
+            if(checkColorAndOrder(type1))
+                $("li").filter(" :even").css("color" ,$("#color").val());
 		});
-		$("#eq").click(function(){
-			$("li").eq($("#x").val()-1).css("color" ,$("#color").val());
+
+		$("#eq").click(function() { // 第X個變色
+            if(checkColorAndOrder(type2))
+                $("li").eq($("#x").val()-1).css("color" ,$("#color").val());
 		});
-		$("#prev").click(function(){
-			$("li").eq($("#x").val()-1).prev().css("color" ,$("#color").val());
+
+		$("#prev").click(function() { // X前一個變色
+			if(checkColorAndOrder(type2))
+                $("li").eq($("#x").val()-1).prev().css("color" ,$("#color").val());
 		});
-		$("#prevAll").click(function(){
-			$("li").eq($("#x").val()-1).prevAll().css("color" ,$("#color").val());
+
+		$("#prevAll").click(function() { // X前全部變色
+            if(checkColorAndOrder(type2))
+                $("li").eq($("#x").val()-1).prevAll().css("color" ,$("#color").val());
 		});
-		$("#next").click(function(){
-			$("li").eq($("#x").val()-1).next().css("color" ,$("#color").val());
+
+		$("#next").click(function() { // X後一個變色
+            if(checkColorAndOrder(type2))
+                $("li").eq($("#x").val()-1).next().css("color" ,$("#color").val());
 		});
-		$("#andSelf").click(function(){
-			$("li").eq($("#x").val()-1).next().andSelf().css("color" ,$("#color").val());
+
+		$("#andSelf").click(function() { // X和後一個變色
+            if(checkColorAndOrder(type2))
+                $("li").eq($("#x").val()-1).next().andSelf().css("color" ,$("#color").val());
 		});
-		$("#not").click(function(){
-			$("li").not($("li").eq($("#x").val()-1)).css("color" ,$("#color").val());
+
+		$("#not").click(function() { // 不含X其他變色
+			if(checkColorAndOrder(type2))
+                $("li").not($("li").eq($("#x").val()-1)).css("color" ,$("#color").val());
 		});
-		$("#slice").click(function(){
-			$("li").slice(0,$("#x").val()).css("color" ,$("#color").val());
+
+		$("#slice").click(function() { // 第一個到X變色
+            if(checkColorAndOrder(type2))
+                $("li").slice(0,$("#x").val()).css("color" ,$("#color").val());
 		});
+
+        function checkColorAndOrder(type) {
+            var color = $("#color").find(":selected").text();
+            var order = $("#x").find(":selected").text();
+            if(type == 1 && color != "color")
+                return true;
+            else if(type == 2 && color != "color" && order != "x")
+                return true;
+            return false;
+        }
 	</script>
 </body>
 
