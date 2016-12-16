@@ -88,9 +88,9 @@
                 <table>
                     <tr>
                         <td>卡片1樣式：
-                            <input id="styleX" name="cardColor" type="radio" onClick="changeStyle(id)"/>樣式1　
-                            <input id="styleY" name="cardColor" type="radio" onClick="changeStyle(id)"/>樣式2　
-                            <input id="styleZ" name="cardColor" type="radio" onClick="changeStyle(id)"/>樣式3　
+                            <input id="styleX" name="cardColor" type="radio" onClick="changeStyle('xStyle')"/>樣式1　
+                            <input id="styleY" name="cardColor" type="radio" onClick="changeStyle('yStyle')"/>樣式2　
+                            <input id="styleZ" name="cardColor" type="radio" onClick="changeStyle('zStyle')"/>樣式3　
                         </td>
                     </tr>
                     <tr>
@@ -131,23 +131,18 @@
         </div>
     </div>
 	<script>
+        var lockCardFlag = false; // 鎖定輸入卡片文字的框框，true: 解除鎖定
         $(document).ready(function() {
             $("#card").attr("style", "overflow:hidden");
             $("#card2").attr("style", "overflow:hidden");
         });
 
-		var lockCardFlag = false;
+        /*
+            先確認$("#card") 是否含有xStyle, yStyle, zStyle，清除它後再加入目前選擇的樣式
+        */
 		function changeStyle(id) {
-			removeCardXYZStyle();
-			if(id == "styleX") {
-				$("#card").addClass("xStyle");
-			}
-			else if(id == "styleY") {
-				$("#card").addClass("yStyle");
-			}
-			else if(id == "styleZ") {
-				$("#card").addClass("zStyle");
-			}
+            removeCardXYZStyle();
+            $("#card").addClass(id);
 		}
 		function removeCardXYZStyle() {
 			if($("#card").hasClass("xStyle"))
@@ -158,10 +153,12 @@
 				$("#card").removeClass("zStyle");
 		}
 		
+        /*
+            處理是否鎖住卡片文字輸入框
+        */
 		function lock() {
 			lockCardFlag = !lockCardFlag;
 			if(lockCardFlag) {
-                var text = "";
 				$("#button1").val(" 解除鎖定 ");
 				$("#text").prop('disabled', true);
                 $("#card").text($("#text").val());
@@ -172,18 +169,19 @@
 			}
 		}
 		
+        /*
+            改變卡片框線
+        */
 		function changeFrame() {
-			if($("#card").hasClass("blackBorderStyle")) {
-				$("#card").removeClass("blackBorderStyle");
-				$("#card").addClass("redBorderStyle");
-			}
-			else {
-				$("#card").removeClass("redBorderStyle");
-				$("#card").addClass("blackBorderStyle");
-			}
+            $("#card").toggleClass("blackBorderStyle");
+            $("#card").toggleClass("redBorderStyle");
 		}
 		
+        /*
+            卡片複製功能，先清除卡片2的class，接著再複製卡片1的class到卡片2上面
+         */
 		function cardCopy() {
+            $("#card2").removeClass();
 			$("#card2").text($("#card").text());
 			$("#card2").addClass($("#card").prop('class'));
 		}
