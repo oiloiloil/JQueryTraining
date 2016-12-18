@@ -141,15 +141,56 @@
         </div>
     </div>
 	<script>
+        var now = new Date();
+        var thisYear, startYear, endYear;
         var idArray = ["usr", "passwd", "passwd2", "fn", "ln", "phone", "mail"];
-        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 29為閏年
-        var startYear = 2006; // 目前年份的前後10年
-        var endYear = 2026;
+        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 前面0~11是跟正常月份相對應的天數，最後days[12]=29代表閏年2月的天數
         
         $(document).ready(function(){
+            initial();
             putYearInSelect();
             putMonthInSelect();
         });
+
+        function initial() {
+            thisYear = now.getFullYear();
+            startYear = thisYear - 10; // 開始日期與中止日期為目前的年份前後10年
+            endYear = thisYear + 10;
+        }
+
+        function putYearInSelect(){
+            for(var i = startYear; i <= endYear; i++) {
+                $("#stYy").append($("<option></option>").text(i));
+                $("#edYy").append($("<option></option>").text(i));
+            }
+        }
+        function putMonthInSelect(){
+            var startMonth = 1;
+            var endMonth = 12;
+            for(var i = startMonth; i <= endMonth; i++) {
+                $("#stMm").append($("<option></option>").text(i));
+                $("#edMm").append($("<option></option>").text(i));
+            }
+        }
+
+        $("#stYy,#stMm,#stDd").change(function() {
+            if($(this).attr("id") != stDd)
+                putDayInSelect("stDd", "stMm", "stYy");
+        });
+
+        function putDayInSelect(selectD_id, selectM_id, selectY_id) { 
+            $("#" + selectid + " option[value !='請選擇']").remove();
+            var year = $("#" + selectY_id).find(":selected").text();
+            var month = $("#" + selectM_id).find(":selected").text();
+            
+            if(year != "請選擇" && month != "請選擇") {
+                if(month == 2 && isLunarYear(year))
+                    month = 13;
+            }
+            for(var i = 1; i <= days[month-1]; i++) {
+                $("#" + selectD_id).append($("<option></option>").text(i));
+            }
+        }
         
         $("#stYy").change(function(){
             checkSelectIsNotDefault_YearAndMonth();
@@ -222,21 +263,9 @@
             }).attr("selected", true);
         }
         
-        function putYearInSelect(){
-            for(var i = startYear; i <= endYear; i++) {
-                $("#stYy").append($("<option></option>").text(i));
-                $("#edYy").append($("<option></option>").text(i));
-            }
-        }
-        function putMonthInSelect(){
-            var startMonth = 1;
-            var endMonth = 12;
-            for(var i = startMonth; i <= endMonth; i++) {
-                $("#stMm").append($("<option></option>").text(i));
-                $("#edMm").append($("<option></option>").text(i));
-            }
-        }
-        function putDayInSelect(){
+        
+
+        function putDayInSelect() {
             $("#stDd option[value !='請選擇']").remove();
             var startY = $("#stYy").find(":selected").text();
             var startM = $("#stMm").find(":selected").text();

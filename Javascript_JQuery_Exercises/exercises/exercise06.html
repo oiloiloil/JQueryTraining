@@ -45,12 +45,12 @@
 
                 <!-- main part-->
                 <img id="ad" src="img/ex5ad1.jpg" />
-                <img src="img/select.jpg" usemap="#planetmap" />
+                <img id="adpic" src="img/select.jpg" usemap="#planetmap" />
                 <!-- menu -->
                 <map id="planetmap" name="planetmap">
-                    <area shape="rect" coords="0,0,100,66" />
-                    <area shape="rect" coords="0,67,100,133" />
-                    <area shape="rect" coords="0,134,100,200" />
+                    <area shape="rect" coords="0,0,100,66" href="img/ex5ad1.jpg" />
+                    <area shape="rect" coords="0,67,100,133" href="img/ex5ad2.jpg" />
+                    <area shape="rect" coords="0,134,100,200" href="img/ex5ad3.jpg" />
                 </map>
             </div>
 
@@ -64,10 +64,14 @@
     </div>
 	<script>
 		var delayTime = 5000; // delay for 5s
-		var picIndex = 1;
+		var picIndex = 1; // 第一張圖片
+        var picCount = 3; // 目前有三張圖片
         var myVar = setInterval(updatePicture_auto, delayTime);
 
-        $(document).ready(function(){
+        $(document).ready(function() {
+            $.each($("#planetmap area"), function(i, item) {
+                console.log(i + " " + item);
+            });
             $("#planetmap").hover(function() { // monse hover in 
                 console.log("hover in ");
                 clearInterval(myVar);
@@ -77,29 +81,27 @@
             });
         });
 		
-		
-		
-		$("#planetmap").on("mousemove",function(event) {
+		$("#planetmap").on("mousemove", function(event) {
 			updatePicture_hover(event.pageY);
 		});
 		
-		function updatePicture_auto() {
+		function updatePicture_auto() { // 自動更換圖片，每經過delayTime就會換一次圖片
 			picIndex = picIndex + 1;
-            if(picIndex > 3)
-                picIndex = picIndex - 3;
+            if(picIndex > picCount) // picIndex++之後，如果picIndex超過picCount的話，減去picCount回到第一張圖片
+                picIndex = picIndex - picCount;
             var picPath = "img/ex5ad" + picIndex + ".jpg";
 			$("#ad").attr("src", picPath);
 		}
 		
-		function updatePicture_hover(coordY) {
-			var offset = 315;
-			var length = coordY-offset;
+		function updatePicture_hover(coordY) { // 以滑鼠在圖片裡的座標決定廣告區塊的內容要更換成哪張圖片
+			var offset = parseInt($("#adpic").offset().top); // 取出#adpic這個元件距離頂端多少pix
+			var mouseCoordY = coordY-offset; // 利用目前滑鼠的Y座標減去offset就能得知滑鼠位於圖片的Y座標是多少
 			
-			if(length < 67) {
+			if(mouseCoordY < 67) {
 				$("#ad").attr("src", "img/ex5ad1.jpg");
 				picIndex = 1;
 			}
-			else if (length > 133) {
+			else if (mouseCoordY > 133) {
 				$("#ad").attr("src", "img/ex5ad3.jpg");
 				picIndex = 3;
 			}

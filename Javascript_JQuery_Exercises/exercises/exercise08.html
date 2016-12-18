@@ -58,41 +58,45 @@
     </div>
 </body>
 <script>
-	$(document).ready(function() {
-		$.ajax({
-			url: "../xml/simplegooglenews.xml",
-			type: "GET",
-			dataType: "xml",
-			success: function(xml) {
-				$(xml).find("item").each(function(i) {
-					var title = $(this).children("title").text();
-					var description = $(this).children("description").text();
-					var link = $(this).children("link").text();
-					$("#f0").after($("<div><p id='googlep"+i+"'></p><a id='googlepp"+i+"' href='"+link+"'></a></div>"));
-					$("#googlep" + i + "").text(title); // <p>加title
-					$("#googlepp" + i + "").text(description); // <a>加description
-				});
-			}
-		});
-		
-		$.ajax({
-			url: "../xml/simpleappledaily.xml",
-			type: "GET",
-			dataType: "xml",
-			success: function(xml) {
-				console.log("success");
-				$(xml).find("item").each(function(i) {
-					var title = $(this).children("title").text();
-					var description = $(this).children("description").text();
-					console.log(title);
-					console.log(description);
-					$("#f1").after($("<div><p id='applep"+i+"'></p><p id='applepp"+i+"'></p></div>"));
-					$("#applep" + i + "").text(title); // <p>加title
-					$("#applepp" + i + "").html(description); // <a>加description
-				});
-			}
-		});
-	});
+    var googlenewsURL = "../xml/simplegooglenews.xml";
+    var applydailyURL = "../xml/simpleappledaily.xml";
+    var newsmap; // 根據新聞類型傳回相對應的元件id
+    
+    $(document).ready(function() {
+        initial();
+        initialNews(googlenewsURL, "google");
+        initialNews(applydailyURL, "appledaily");
+    })
+
+    function initial() {
+        newsmap = {
+            google: "f0",
+            appledaily: "f1"
+        };
+
+    }
+
+    function initialNews(url, type) {
+        console.log(newsmap[type]);
+        $.ajax({
+            url: url,
+            type: "GET",
+            dataType: "xml",
+            success: function(xml) {
+                $(xml).find("item").each(function(i) {
+                    var title = $(this).children("title").text();
+                    var description = $(this).children("description").text();
+                    var link = $(this).children("link").text();
+                    var titleid = type + "p" + i;
+                    var linkid = type + "pp" + i; 
+                    $("#" + newsmap[type]).after($("<div><p id='" + titleid + "'></p><a id='" + linkid + "' href='" + link + "'></a></div><br>"));
+                    $("#" + titleid).text(title); // <p>加title
+                    $("#" + linkid).html(description); // <a>加description
+                });
+            }
+        });
+    }
+    
 </script>
 	
 </html>
