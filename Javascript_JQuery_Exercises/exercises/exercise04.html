@@ -57,11 +57,11 @@
                                 </select>
                             </td>
                             <td width="140px">
-                                <input id="moveRight" type="button" style="width:100px" value="往右移動>>">
+                                <input id="moveRight" type="button" style="width:100px" value="往右移動>>" onClick="moveData('list1', 'list2')">
                                 <br/>
                                 <br/>
                                 <br/>
-                                <input id="moveLeft" type="button" style="width:100px" value="<<往左移動">
+                                <input id="moveLeft" type="button" style="width:100px" value="<<往左移動" onClick="moveData('list2', 'list1')">
                             </td>
                             <td>
                                 <select id="list2" size="10" style="width:200px">
@@ -103,41 +103,26 @@
         </div>
     </div>
 	<script>
-		$("#moveRight").click(function(){
-			$("#list1").children().each(function() {
-				$("#list2").append($("<option></option>").attr("value", "").text($(this).text()));
-			});
-			$("#list1").empty();
-		});
-		
-		$("#moveLeft").click(function() {
-			$("#list2").children().each(function() {
-				$("#list1").append($("<option></option>").attr("value", "").text($(this).text()));
-			});
-			$("#list2").empty();
-		});
-		
+        function moveData(listid1, listid2) { // 移動資料，從"listid1" -> "listid2"，分別傳入從哪個list的id以及傳到哪個list的id
+            if($("#" + listid1 + " option").length > 0) {
+                $("#" + listid2).append($("<option></option>").text($("#" + listid1 + " option:last").text()));
+                $("#"+ listid1 + " option:last").remove();
+            }
+        }
+
         var inputRules = /\s/; // 空白字元
-		$("#add1").click(function() {
-            var text = $("#input1").val();
+        $("#add1,#add2").click(function() {
+            var id = $(this).attr("id");
+            var text = $("#input" + id.replace(/add/, '')).val();
             if(text != "" && !text.match(inputRules))
-                $("#list1").append($("<option></option>").attr("value", "").text(text));
-		});
-		
-		$("#add2").click(function() {
-            var text = $("#input1").val();
-            if(text != "" && !text.match(inputRules))
-                $("#list2").append($("<option></option>").attr("value", "").text(text));
-		});
-		
-		$("#del1").click(function() {
-			$("#list1").find(":last").remove();
-		});
-		
-		$("#del2").click(function() {
-			$("#list2").find(":last").remove();
-		});
-		
+                $("#list" + id.replace(/add/, '')).append($("<option></option>").attr("value", "").text(text));
+        })
+
+        $("#del1,#del2").click(function() {
+            var id = $(this).attr("id");
+            $("#list" + id.replace(/del/, '')).find(":last").remove();
+        });
+
 	</script>
 </body>
 
