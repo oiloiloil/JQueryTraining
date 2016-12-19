@@ -24,15 +24,29 @@
         var pos = {};
 
         $(document).ready(function() {
+            var randomNum = Math.floor(Math.random() * (gridWidth * gridWidth));
+            console.log("random: " + randomNum);
             //set the initial puzzle
             for (i = 0; i < gridWidth * gridWidth; i++) {
                 part(document.getElementById('pic' + i), i);
                 pos[i] = {row: parseInt(i / gridWidth), column: i % gridWidth};
-                if(i == 0) {
+                if(i == randomNum) {
                     document.getElementById('pic' + i).style.display = 'none';
                 }
             }
+            //messPic();
         });
+
+        function messPic() {
+            for(var i = 0; i < 100; i++) {
+                var cells = $("#picDiv");
+                //找出空格所在位置，並取得其相鄰圖塊
+                var toMove = getNearPosition(cells.index($("#Pic0")[0]));
+                cells.eq(toMove[ //由空格的相鄰圖塊擇一挪動
+                    parseInt(Math.random() * toMove.length) 
+                ]).click();
+            }
+        }
 
         // 回傳一個陣列，裡面包含目前使用者點擊的格子的周圍圖片ID編號
         function getNearPosition(i) {
@@ -53,7 +67,8 @@
         }
 
          //call this function to show part of image.
-        function part(block, pos) {
+         // 處理每格圖片的style的樣式
+        function part(block, pos) { 
             x = parseInt(pos / gridWidth);
             y = pos % gridWidth;
             x *= -110;
@@ -63,13 +78,11 @@
         }
 
         var userClick = {row:-1 , column: -1};
-        $(document).click(function(event) {
+        $(document).click(function(event) { // 互換2個格子之間的style
             if(isMouseClickInTable(event.pageX, event.pageY)) {
-                console.log("in table");
-                console.log("user click row: " + userClick.row + " column: " + userClick.column);
                 var toCheck = getNearPosition(userClick.row * gridWidth + userClick.column * 1);
-                console.log(toCheck);
                 for(var i = 0; i < toCheck.length; i++) {
+                    console.log(document.getElementById('pic' + toCheck[i]).style);
                     if(document.getElementById('pic' + toCheck[i]).style.display == 'none') {
                         document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.display = 'none'; // 使用者點擊的格子隱藏
                         document.getElementById('pic' + toCheck[i]).style.display = 'block';

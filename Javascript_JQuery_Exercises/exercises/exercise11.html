@@ -66,7 +66,7 @@
                     </blockquote>
                 </p>
 
-                <form id="form1" onSubmit="return check()" name="f1" method="post" action="join.php">
+                <form id="form1" name="f1" >
                     <table height="200px" width="700px">
                         <tr>
                             <td colspan=2>User Name:
@@ -147,109 +147,25 @@
         </div>
     </div>
     <script>
+        var now = new Date();
+        var thisYear, startYear, endYear;
         var idArray = ["usr", "passwd", "passwd2", "fn", "ln", "phone", "mail"];
-        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 29為閏年
-        var startYear = 2006; // 目前年份的前後10年
-        var endYear = 2026;
+        var days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 29]; // 前面0~11是跟正常月份相對應的天數，最後days[12]=29代表閏年2月的天數
         
         $(document).ready(function(){
-            setRules();
-
-
+            initial();
             putYearInSelect();
             putMonthInSelect();
         });
 
-        function setRules(){
-            jQuery.validator.addMethod("checkName", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]/;
-                return value.match(nameRule);
-            });
-            jQuery.validator.addMethod("checkPassword", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var passwdRule = /[a-zA-Z0-9]+/;
-                return value.match(passwdRule);
-            });
-            jQuery.validator.addMethod("checkPhone", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var phoneRule = /^(09)[0-9]{8}/;
-                return value.match(phoneRule);
-            });
-            jQuery.validator.addMethod("confirmPasswd", function(value, elem){ // value=欄位內容, elem為欄位元素
-                var passwd = $("#passwd").val();
-                return value == passwd;
-            });
-        }
-        
-        $("#stYy").change(function(){
-            checkSelectIsNotDefault_YearAndMonth();
-            checkSelectIsNotDefault_StartYMD(); // 起始日期都非"請選擇"，自動調整最後日期
-        });
-        $("#stMm").change(function(){
-            checkSelectIsNotDefault_YearAndMonth();
-            checkSelectIsNotDefault_StartYMD();
-        });
-        $("#stDd").change(function(){
-            checkSelectIsNotDefault_StartYMD();
-        });
-        function checkSelectIsNotDefault_YearAndMonth(){ // 起始的年和月的值不是請選擇
-            if($("#stYy").find(":selected").text() != "請選擇" && $("#stMm").find(":selected").text() != "請選擇") {
-                putDayInSelect();
-            }
-        }
-        function checkSelectIsNotDefault_StartYMD(){
-            if($("#stYy").find(":selected").text() != "請選擇" && $("#stMm").find(":selected").text() != "請選擇" &&
-               $("#stDd").find(":selected").text() != "請選擇") {
-                changeEndYMD();
-            }
-        }
-        function changeEndYMD(){
-            var startY = $("#stYy").find(":selected").text();
-            var startM = $("#stMm").find(":selected").text();
-            var startD = $("#stDd").find(":selected").text();
-            
-            var endY = startY; // 先假設endY和endM和endD不會因為天數加1而進位，後面再進行確認
-            var endM = startM;
-            var endD = startD;
-            
-            if(startM == 2 && isLunarYear(startY)) {
-                endD = parseInt(startD) + 1;
-                if(endD > days[12]) {
-                    endD = 1;
-                    endM = parseInt(startM) + 1;
-                    if(endM > 12) {
-                        endM = 1;
-                        endY = parseInt(startY) + 1;
-                    }
-                }
-            }
-            else if(isEndDateOver(endY, endM, endD)) {
-                endY = endYear;
-                endM = 12;
-                endD = 31;
-            }
-            else {
-                endD = parseInt(startD) + 1;
-                if(endD > days[startM - 1]) {
-                    endD = 1;
-                    endM = parseInt(startM) + 1;
-                    if(endM > 12) {
-                        endM = 1;
-                        endY = parseInt(startY) + 1;
-                    }
-                }
-            }
+        function initial() {
+            thisYear = now.getFullYear();
+            startYear = thisYear - 10; // 開始日期與中止日期為目前的年份前後10年
+            endYear = thisYear + 10;
 
-            $("#edYy option").filter(function(){
-                return $(this).text() == endY;
-            }).attr("selected", true);
-            $("#edMm option").filter(function(){
-                return $(this).text() == endM;
-            }).attr("selected", true);
-            putDayInSelect_end();
-            $("#edDd option").filter(function(){
-                return $(this).text() == endD;
-            }).attr("selected", true);
+            setRules(); // 設定validate規則
         }
-        
+
         function putYearInSelect(){
             for(var i = startYear; i <= endYear; i++) {
                 $("#stYy").append($("<option></option>").text(i));
@@ -264,43 +180,114 @@
                 $("#edMm").append($("<option></option>").text(i));
             }
         }
-        function putDayInSelect(){
-            $("#stDd option[value !='請選擇']").remove();
-            var startY = $("#stYy").find(":selected").text();
-            var startM = $("#stMm").find(":selected").text();
-            if(startM == 2)
-                if(isLunarYear(startY))
-                    startM = 13;
-            for(var i = 1; i <= days[startM-1]; i++) {
-                 $("#stDd").append($("<option></option>").text(i));
+
+        $("#stYy,#stMm,#stDd,#edYy,#edMm,#edDd").change(function() {
+            if($(this).attr("id").indexOf("st") != -1 && $(this).attr("id") != "stDd") {
+                console.log("st change");
+                handleSelectDays("stDd", "stMm", "stYy");
+            }
+            else if($(this).attr("id").indexOf("ed") != -1 && $(this).attr("id") != "edDd") {
+                console.log("ed change");
+                handleSelectDays("edDd", "edMm", "edYy");
+            }
+
+            if($(this).attr("id").indexOf("ed") == -1 && isStartDateAllChoose()) { // start date三個欄位都有選取的話，更新end date的值
+                updateEndDate();
+            }
+        });
+
+        /*
+            處理stDd, edDd需要放入多少天
+         */
+        function handleSelectDays(selectD_id, selectM_id, selectY_id) { 
+            var year = $("#" + selectY_id).find(":selected").text();
+            var month = $("#" + selectM_id).find(":selected").text();
+            
+            var maxDays = -1;
+            if(year != "請選擇" && month != "請選擇") { // start year和start month都需要選好年份和月份才會更新天數
+                maxDays = getMaxDays(year, month);
+            }
+
+            putDayInSelect(selectD_id, maxDays);
+        }
+        function putDayInSelect(selectD_id, maxDays) {
+            $("#" + selectD_id + " option[value !='請選擇']").remove();
+            for(var i = 1; i <= maxDays; i++) {
+                $("#" + selectD_id).append($("<option></option>").text(i));
             }
         }
-        function isLunarYear(startY) {
-            if(startY % 4 == 0 && startY % 100 != 0)
+        function getMaxDays(year, month) {
+            if(month == 2 && isLunarYear(year))
+                month = 13;
+            return days[month-1];
+        }
+        function isLunarYear(year) {
+            if(year % 4 == 0 && year % 100 != 0)
                 return true;
             return false;
         }
-        function putDayInSelect_end(){
-            $("#edDd option[value !='請選擇']").remove();
-            var endY = $("#edYy").find(":selected").text();
-            var endM = $("#edMm").find(":selected").text();
-            if(endM == 2)
-                if(isLunarYear(endY))
-                    endM = 13;
-            for(var i = 1; i <= days[endM-1]; i++) {
-                 $("#edDd").append($("<option></option>").text(i));
-            }
+
+        function isStartDateAllChoose() {
+            return $("#stYy").find(":selected").text() != "請選擇" && $("#stMm").find(":selected").text() != "請選擇" &&
+             $("#stDd").find(":selected").text() != "請選擇"? true:false;
         }
-        function isEndDateOver(endY, endM, endD) {
-            if(endY == endYear && endM == 12 && endD == 31)
-                return true;
+
+        function updateEndDate() {
+            console.log("update end date");
+            var year_st = $("#stYy").find(":selected").text();
+            var month_st = $("#stMm").find(":selected").text();
+            var day_st = $("#stDd").find(":selected").text();
+            var endDate = {year: parseInt(year_st), month: parseInt(month_st), day: parseInt(day_st)+1};
+            console.log("first: " + endDate.year + " " + endDate.month + " " + endDate.day);
+            endDate = checkEndDateIsOverflow(endDate); // 處理overflow
+            console.log("second: " + endDate.year + " " + endDate.month + " " + endDate.day);
+
+            $("#edYy option").filter(function() {
+                return $(this).text() == endDate.year;
+            }).attr("selected", true);
+            $("#edMm option").filter(function() {
+                return $(this).text() == endDate.month;
+            }).attr("selected", true);
+            putDayInSelect("edDd", getMaxDays(endDate.year, endDate.month)); // 由於day+1後可能產生overflow的情況，需要再重新更新option的值
+            $("#edDd option").filter(function() {
+                return $(this).text() == endDate.day;
+            }).attr("selected", true);
+        }
+
+        /*
+            確認end date = start date + 1後是否有overflow的情況，順便在此進行處理
+         */
+        function checkEndDateIsOverflow(endDate) {
+            var maxDays = getMaxDays(endDate.year, endDate.month);
+            var months = 12; // 一年有12個月
+            if(endDate.day > maxDays) {
+                endDate.day = endDate.day - maxDays; // 到下個月的第一天
+                endDate.month += 1;
+            }
+            if(endDate.month > months) {
+                endDate.month -= months; // 到下一年的第一個月
+                endDate.year += 1;
+            }
+            /*
+                如果超過設定的end year，則將end date設定為最後一天
+             */
+            if(endDate.year > endYear) {
+                endDate.year = endYear;
+                endDate.month = 12;
+                endDate.day = 31;
+            }
+            return endDate;
         }
         
-        $(function(){
+        $(function() {
             $("#birth").datepicker({dateFormat:"yy/mm/dd"});
         });
         
-        $("input").keypress(function(){
+        /*
+            自動換行，
+            每個欄位輸入的值達到最大值的時候，游標自動跳往下一欄位，跳的順序根據idArray放的id順序
+         */
+        $("input").keypress(function() {
             if($(this).val().length == ($(this).attr("maxlength"))-1) {
                 console.log($(this).next());
                 var index = idArray.indexOf($(this).attr("id"));
@@ -310,7 +297,7 @@
             }
         });
         
-        $("#clear").click(function(){
+        $("#clear").click(function() {
             $("input[id !='submit'][id !='clear']").val("");
             $("#stYy").get(0).selectedIndex = 0; // 選取select 的第一個option
             $("#stMm").get(0).selectedIndex = 0;
@@ -318,6 +305,33 @@
             $("#edMm").get(0).selectedIndex = 0;
             $("#stDd option[value != '請選擇']").remove();
             $("#edDd option[value != '請選擇']").remove();
+        });
+
+        function setRules() {
+            jQuery.validator.addMethod("checkName", function(value, elem) { // value=欄位內容, elem為欄位元素
+                var nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]/;
+                return value.match(nameRule);
+            });
+            jQuery.validator.addMethod("checkPassword", function(value, elem) { // value=欄位內容, elem為欄位元素
+                var passwdRule = /[a-zA-Z0-9]+/;
+                return value.match(passwdRule);
+            });
+            jQuery.validator.addMethod("checkPhone", function(value, elem) { // value=欄位內容, elem為欄位元素
+                var phoneRule = /^(09)[0-9]{8}/;
+                return value.match(phoneRule);
+            });
+            jQuery.validator.addMethod("confirmPasswd", function(value, elem) { // value=欄位內容, elem為欄位元素
+                var passwd = $("#passwd").val();
+                return value == passwd;
+            });
+        }
+
+        $("#submit").click(function() {
+            if(!$("#form1").valid())
+                alert("還有欄位輸入錯誤或尚未填入");
+            else {
+                showUserInfo();
+            }
         });
 
         $("#form1").validate({
@@ -351,45 +365,81 @@
                 mail: {
                     required: true,
                     email: true
+                },
+                stYy: {
+                    required: true
+                },
+                stMm: {
+                    required: true
+                },
+                stDd: {
+                    required: true
+                },
+                edYy: {
+                    required: true
+                },
+                edMm: {
+                    required: true
+                },
+                edDd: {
+                    required: true
                 }
             },
             messages: {
-                    usr: {
-                        required: "Please enter your name.",
-                        checkName: "Your name is wrong."
-                    },
-                    passwd: {
-                        required: "Please enter your password.",
-                        checkPassword: "Your name is wrong."
-                    },
-                    passwd2: {
-                        required: "Please confirm your password.",
-                        equalTo: "Password is not the same."
-                    },
-                    fn: {
-                        required: "Please enter your first name."
-                    },
-                    ln: {
-                        required: "Please enter your last name."
-                    },
-                    birth: {
-                        required: "Please enter your birthday."
-                    },
-                    phone: {
-                        required: "Please enter your cell phone number.",
-                        checkPhone: "電話格式錯誤"
-                    },
-                    mail: {
-                        required: "Please enter your email.",
-                        email: "Your email is wrong."
-                    }
+                usr: {
+                    required: "Please enter your name.",
+                    checkName: "Your name is wrong."
                 },
-                submitHandler: function(form){
-                    form.submit();
+                passwd: {
+                    required: "Please enter your password.",
+                    checkPassword: "Your name is wrong."
+                },
+                passwd2: {
+                    required: "Please confirm your password.",
+                    equalTo: "Password is not the same."
+                },
+                fn: {
+                    required: "Please enter your first name."
+                },
+                ln: {
+                    required: "Please enter your last name."
+                },
+                birth: {
+                    required: "Please enter your birthday."
+                },
+                phone: {
+                    required: "Please enter your cell phone number.",
+                    checkPhone: "電話格式錯誤"
+                },
+                mail: {
+                    required: "Please enter your email.",
+                    email: "Your email is wrong."
+                },
+                stYy: {
+                    required: "請輸入"
+                },
+                stMm: {
+                    required: "請輸入"
+                },
+                stDd: {
+                    required: "請輸入"
+                },
+                edYy: {
+                    required: "請輸入"
+                },
+                edMm: {
+                    required: "請輸入"
+                },
+                edDd: {
+                    required: "請輸入"
                 }
-            });
+            },
+            submitHandler: function(form) {
+                form.submit();
+            }
+        });
         
-        function check(){
+        function showUserInfo() {
             var userInfo = "";
             var usr = $("#usr").val();
             var passwd = $("#passwd").val();
@@ -407,7 +457,6 @@
                         "phone: " + phone + "\n" +
                         "email: " + email + "\n";
             alert(userInfo);
-            return false;
         }
     </script>
 </body>
