@@ -125,7 +125,7 @@
             $.each(text, function(i, value) {
                 console.log(value);
 
-                var tempURL = SCHEDULE_URL + value.substr(1, value.length - 2);
+                var tempURL = SCHEDULE_URL + value.ser_no;
                 $.ajax({
                     url: tempURL,
                     type: "GET",

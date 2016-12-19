@@ -3,6 +3,11 @@
 <html>
 
 <head>
+    <style type="text/css">
+        a.search{
+            font-size: 15px;
+        }
+    </style>
     <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
     <meta name="description" content="description" />
     <meta name="keywords" content="keywords" />
@@ -82,7 +87,7 @@
                         <tr>
                             <td>
                                 您是不是要找:
-                                <a id="suggest"></a>
+                                <a id="suggest" class="search"></a>
                             </td>
                         </tr>
                     </table>
@@ -173,34 +178,49 @@
         var SCHEDULE_URL = "http://192.168.0.105:9099/schedule.php?ser_no=";
         var items;
 
-        $(document).ready(function(){
-            $.cookie("basket-data", null);
+        $(document).ready(function() {
+            initial();
+        });
 
+        function initial() {
+            // 清空資料
+            
+            // 清空cookie
+            $.cookie("basket-data", null); 
+
+            // 清空輸入keyword欄位
+            $("#keyword").val("");
+
+            // 詳細資訊欄位清空
             $("#ser_no").val("");
             $("#credit").val("");
             $("#cou_cname").val("");
             $("#tea_cname").val("");
             $("#daytime").val("");
+        }
+
+        // 建立點擊事件
+        $("#suggest").click(function() {
+            console.log("auto put result");
+            $("#keyword").val($("#suggest").text());
         });
         
         // $("#suggest")會有閃爍的情形，如:輸入a special study, 還沒驗證輸入的格式(正規表示)
         $("#keyword").keyup(function() {
-            if($("#search_course").html() != null)
-                $("#search_course").remove();
             var keyword = $(this).val();
             var tempURL = SUGGEST_URL + $("#keyword").val();
             $.ajax({
                 url: tempURL,
                 type: "GET",
                 success: function(result){
-                    if(result != "") {
-                        $("#suggest").append($("<p onclick='autoPutResult()'></p>").attr("id", "search_course").text(result));
+                    if($("#suggest").text() != result) {
+                        $("#suggest").text(result);
                     }
                 }
             });
         });
         
-        $("#searchBtn").click(function(){ 
+        $("#searchBtn").click(function() { 
             console.log("search");
             var tempURL = SEARCH_URL + $("#keyword").val();
             $.ajax({
@@ -215,7 +235,10 @@
             });
         }); // end of $("#searchBtn").click
 
-        function updateSearchResult(){
+        // 更新搜尋關鍵字後的結果
+        function updateSearchResult() {
+            // 先清除已經出現的搜尋結果
+            $("#serch_result").children().remove();
             $.each(items.CourseList, function(i, item){
                 $("#serch_result").append($("<tr ser_no='" + item["ser_no"] + 
                     "' credit='" + item["credit"] + 
@@ -224,7 +247,8 @@
             });
         }
 
-        function showSearchResult(ser_no){
+        // 點選課程，詳細資訊里顯示點擊的課程資訊
+        function showSearchResult(ser_no) {
             for(var i = 0; i < items.CourseList.length; i++) {
                 if(items.CourseList[i].ser_no == ser_no) {
                     $("#ser_no").val(items.CourseList[i].ser_no);
@@ -237,28 +261,49 @@
             }
         }
 
-        function selectCourse(){
-            alert('選課成功!');
-            
-            if(JSON.parse($.cookie("basket-data")) != null) {
-                var text = JSON.parse($.cookie("basket-data")); // 從cookie取出JSON資料
-                text.push(JSON.stringify($("#ser_no").val()));
-                $.cookie("basket-data", JSON.stringify(text));
+        function selectCourse() {
+            if(isUserHasChosenCourse() == true) {
+                alert('你已選過此課程!');
             }
             else {
-                var text = [];
-                text.push(JSON.stringify($("#ser_no").val()));
-                $.cookie("basket-data", JSON.stringify(text));
+                /*
+                    確認cookie內存在basket-data這個資料，並將之前所存的值取出，並且再增加一筆新的選課資料。
+                    如果cookie內部的basket-data資料為null的話，建立一個新的json物件並放入第一筆選課資料
+                */
+                if(JSON.parse($.cookie("basket-data")) != null) {
+                    var text = JSON.parse($.cookie("basket-data")); // 從cookie取出JSON資料
+                    var json = {ser_no: $("#ser_no").val()};
+                    text.push(json);
+                    $.cookie("basket-data", JSON.stringify(text));
+                }
+                else {
+                    var text = [];
+                    var json = {ser_no: $("#ser_no").val()};
+                    text.push(json);
+                    $.cookie("basket-data", JSON.stringify(text));
+                }
+                console.log(JSON.parse($.cookie("basket-data")));
+                alert('選課成功!');
             }
-            
-            console.log(JSON.parse($.cookie("basket-data")));
         }
 
-        function autoPutResult() {
-            $("#keyword").val($("#search_course").text());
+        function isUserHasChosenCourse() {
+            if(JSON.parse($.cookie("basket-data")) == null) // cookie 裡面沒有資料
+                return false;
+            var text = JSON.parse($.cookie("basket-data"));
+            var selected_ser_no = $("#ser_no").val();
+
+            var result = false;
+            $.each(text, function(i, item) {
+                if(selected_ser_no == item.ser_no) { // 使用者以選過此課程
+                    console.log("你已選過此課程!");
+                    result = true;
+                    return false; // same as break
+                }
+            });
+
+            return result;
         }
-        
-        
     </script>
 </body>
 

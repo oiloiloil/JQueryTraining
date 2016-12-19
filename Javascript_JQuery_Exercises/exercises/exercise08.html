@@ -3,6 +3,12 @@
 <html>
 
 <head>
+    <style>
+        a.title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
     <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
     <meta name="description" content="description" />
     <meta name="keywords" content="keywords" />
@@ -73,11 +79,9 @@
             google: "f0",
             appledaily: "f1"
         };
-
     }
 
-    function initialNews(url, type) {
-        console.log(newsmap[type]);
+    function initialNews(url, type) { // 傳入type為了建立元件id使用
         $.ajax({
             url: url,
             type: "GET",
@@ -89,9 +93,9 @@
                     var link = $(this).children("link").text();
                     var titleid = type + "p" + i;
                     var linkid = type + "pp" + i; 
-                    $("#" + newsmap[type]).after($("<div><p id='" + titleid + "'></p><a id='" + linkid + "' href='" + link + "'></a></div><br>"));
-                    $("#" + titleid).text(title); // <p>加title
-                    $("#" + linkid).html(description); // <a>加description
+                    $("#" + newsmap[type]).after($("<div><a class='title' id='" + titleid + "' href='" + link + "'></a><p id='" + linkid + "'></p></div><br>"));
+                    $("#" + titleid).text(title); // <a>加title
+                    $("#" + linkid).html(description); // <p>加description
                 });
             }
         });

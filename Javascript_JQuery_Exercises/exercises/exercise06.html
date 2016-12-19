@@ -64,52 +64,35 @@
     </div>
 	<script>
 		var delayTime = 5000; // delay for 5s
-		var picIndex = 1; // 第一張圖片
+		var picIndex = 0; // 第一張圖片
         var picCount = 3; // 目前有三張圖片
+        var picArray = ["img/ex5ad1.jpg", "img/ex5ad2.jpg", "img/ex5ad3.jpg"];
         var myVar = setInterval(updatePicture_auto, delayTime);
 
         $(document).ready(function() {
-            $.each($("#planetmap area"), function(i, item) {
-                console.log(i + " " + item);
-            });
-            $("#planetmap").hover(function() { // monse hover in 
+            $("#planetmap area").hover(function() { // monse hover in 
                 console.log("hover in ");
                 clearInterval(myVar);
+                updatePicture_hover($(this));
             },function() { // mouse hover out
                 console.log("hover out ");
                 myVar = setInterval(updatePicture_auto, delayTime);
             });
         });
-		
-		$("#planetmap").on("mousemove", function(event) {
-			updatePicture_hover(event.pageY);
-		});
-		
+
 		function updatePicture_auto() { // 自動更換圖片，每經過delayTime就會換一次圖片
 			picIndex = picIndex + 1;
-            if(picIndex > picCount) // picIndex++之後，如果picIndex超過picCount的話，減去picCount回到第一張圖片
-                picIndex = picIndex - picCount;
-            var picPath = "img/ex5ad" + picIndex + ".jpg";
+            if(picIndex >= picArray.length) // picIndex++之後，如果picIndex超過picCount的話，減去picCount回到第一張圖片
+                picIndex = picIndex - picArray.length;
+            var picPath = picArray[picIndex];
 			$("#ad").attr("src", picPath);
 		}
-		
-		function updatePicture_hover(coordY) { // 以滑鼠在圖片裡的座標決定廣告區塊的內容要更換成哪張圖片
-			var offset = parseInt($("#adpic").offset().top); // 取出#adpic這個元件距離頂端多少pix
-			var mouseCoordY = coordY-offset; // 利用目前滑鼠的Y座標減去offset就能得知滑鼠位於圖片的Y座標是多少
-			
-			if(mouseCoordY < 67) {
-				$("#ad").attr("src", "img/ex5ad1.jpg");
-				picIndex = 1;
-			}
-			else if (mouseCoordY > 133) {
-				$("#ad").attr("src", "img/ex5ad3.jpg");
-				picIndex = 3;
-			}
-			else {
-				$("#ad").attr("src", "img/ex5ad2.jpg");
-				picIndex = 2;
-			}
-		}
+       
+        function updatePicture_hover(obj) {
+            var img = obj.attr("href");
+            $("#ad").attr("src", img);
+            picIndex = jQuery.inArray(img, picArray); // 更新picIndex
+        }
 		
 		
 	</script>

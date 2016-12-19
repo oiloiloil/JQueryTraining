@@ -12,7 +12,7 @@
     <title>Exercise 05 - Alarm</title>
     <script type="text/javascript" src="../jquery.js"></script>
     <script type="text/javascript">
-		var delayTime = 1000; // 1秒
+		var delayTime = 1000; // 1秒，設定setInterval的間隔時間
 		
         // add 0s
         function pad(num, digits) {
@@ -57,37 +57,39 @@
 		
 		var alarmClock;
 		function setAlarmClock(clockType) {
-			var hr_alarm = $("#hr :selected").text();
-			var min_alarm = $("#min :selected").text();
-			var sec_alarm = $("#sec :selected").text();
+			var hr_alarm; // 取得鬧鐘設定時間的時:分:秒
+			var min_alarm;
+			var sec_alarm;
+            clearInterval(alarmClock); // 有設定鬧鐘的話先清除原先設定的時間，讓鬧鈴只會出現一次
 			
-			if(clockType = "once") {
-                /*
-                var alarmTime = setTestTime();
-                hr_alarm = alarmTime.hr;
-                min_alarm = alarmTime.min;
-                sec_alarm = alarmTime.sec;
-                */
-                clearInterval(alarmClock);
+			if(clockType == "once") {
+                hr_alarm = $("#hr :selected").text(); // 取得鬧鐘設定時間的時:分:秒
+                min_alarm = $("#min :selected").text();
+                sec_alarm = $("#sec :selected").text();
+
 				alarmClock = setInterval(function() {
 					if(hr == hr_alarm && min == min_alarm && sec == sec_alarm) {
 						var press = confirm("Alarm Clock.");
 						if(press == true){
-							//clearInterval(alarmClock);
-							console.log("wait for 10 sec");
-							repeatAlarmClock();
+							console.log("wait for 10 sec(repeat)");
+							setAlarmClock("repeat");
 						}	
 						else{
 							console.log("The alarm is end.");
-							//clearInterval(alarmClock);
+                            clearInterval(alarmClock);
 						}
 					}
 				}, delayTime); 
 			}
 			else {
-				sec_alarm = sec + 10;
-				min_alarm = min;
-				hr_alarm = hr;
+                console.log("repeat alarm");
+				sec_alarm = parseInt(sec) + 10;
+				min_alarm = parseInt(min);
+				hr_alarm = parseInt(hr);
+                /*
+                    鬧鈴每重複一次會在加10秒，如果秒數超過60就需要減60，分+1，如果分超過60，時的部分需要+1
+                    時超過24就需要減去24(到了隔天)
+                 */
 				if(sec_alarm >= 60) {
 					sec_alarm = sec_alarm - 60;
 					min_alarm++;
@@ -105,7 +107,7 @@
 					if(hr == hr_alarm && min == min_alarm && sec == sec_alarm) {
 						var press = confirm("Alarm Clock.");
 						if(press == true){
-							console.log("wait for 10 sec");
+							console.log("wait for 10 sec(repeat)");
 							setAlarmClock("repeat");
 						}	
 						else{
@@ -116,60 +118,7 @@
 				}, delayTime);
 			}
 		} // end of setAlarmClock()
-
-        function setTestTime() {
-            var alarm = {hr: -1, min: -1, sec: -1};
-            alarm.sec = sec + 10;
-            alarm.min = min;
-            alarm.hr = hr;
-            if(sec_alarm >= 60) {
-                sec_alarm = sec_alarm - 60;
-                min_alarm++;
-            }
-            if(min_alarm >= 60) {
-                min_alarm = min_alarm - 60;
-                hr_alarm++;
-            }
-            if(hr_alarm >= 24) {
-                hr_alarm = hr_alarm - 24;
-            }
-            return alarm;
-        }
 		
-		function repeatAlarmClock() {
-			var sec_alarm = sec + 10;
-				var min_alarm = min;
-				var hr_alarm = hr;
-				if(sec_alarm >= 60) {
-					sec_alarm = sec_alarm - 60;
-					min_alarm++;
-				}
-				if(min_alarm >= 60) {
-					min_alarm = min_alarm - 60;
-					hr_alarm++;
-				}
-				if(hr_alarm >= 24) {
-					hr_alarm = hr_alarm - 24;
-				}
-				
-				console.log("hr=" + hr_alarm + "min=" + min_alarm + "sec=" + sec_alarm);
-				alarmClock = setInterval(function() {
-					if(hr == hr_alarm && min == min_alarm && sec == sec_alarm) {
-						var press = confirm("Alarm Clock.");
-						if(press == true){
-							console.log("wait for 10 sec");
-							repeatAlarmClock();
-						}	
-						else{
-							console.log("The alarm is end.");
-							clearInterval(alarmClock);
-						}
-					}
-				}, delayTime);
-		}
-		
-		
-
         $(document).ready(function() {
             // call this function to show the time of one Date() object.
 			showTime(new Date());
@@ -178,8 +127,6 @@
             addNumToTimeSelectMenu();
         });
 		
-		
-
     </script>
 </head>
 
