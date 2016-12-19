@@ -84,11 +84,18 @@
                 for(var i = 0; i < toCheck.length; i++) {
                     console.log(document.getElementById('pic' + toCheck[i]).style);
                     if(document.getElementById('pic' + toCheck[i]).style.display == 'none') {
-                        var oldStyle = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style;
-                        var newStyle = document.getElementById('pic' + toCheck[i]).style;
+                        var oldStyle_top = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.top;
+                        var oldStyle_left = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.left;
+                        var newStyle_top = document.getElementById('pic' + toCheck[i]).style.top;
+                        var newStyle_left = document.getElementById('pic' + toCheck[i]).style.left;
                         
-                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style = newStyle;
-                        document.getElementById('pic' + toCheck[i]).style = oldStyle;
+                        // 處理新舊格子的的style互換
+                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.top = newStyle_top;
+                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.left = newStyle_left;
+                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.display = 'none';
+                        document.getElementById('pic' + toCheck[i]).style.top = oldStyle_top;
+                        document.getElementById('pic' + toCheck[i]).style.left = oldStyle_left;
+                        document.getElementById('pic' + toCheck[i]).style.display = 'block';
                         break;
                     }
                 }
