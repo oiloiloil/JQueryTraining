@@ -313,7 +313,7 @@
                 return value.match(nameRule);
             });
             jQuery.validator.addMethod("checkPassword", function(value, elem) { // value=欄位內容, elem為欄位元素
-                var passwdRule = /[a-zA-Z0-9]+/;
+                var passwdRule = /[a-zA-Z0-9]{6}/;
                 return value.match(passwdRule);
             });
             jQuery.validator.addMethod("checkPhone", function(value, elem) { // value=欄位內容, elem為欄位元素

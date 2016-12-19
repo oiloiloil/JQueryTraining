@@ -311,7 +311,7 @@
         }
         function isPasswdCorrect() {
             var passwd = $("#passwd").val();
-            passwdRule = /[a-zA-Z0-9]+/;
+            passwdRule = /[a-zA-Z0-9]{6}/;
             console.log(passwd);
             if(passwd.search(passwdRule) == -1) {
                 alert("password輸入錯誤");
