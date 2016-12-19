@@ -77,15 +77,18 @@
             block.style.left = y + 'px';
         }
 
-        var userClick = {row:-1 , column: -1};
+        var userClick = {row:-1 , column: -1}; // 使用者目前點擊的格子
         $(document).click(function(event) { // 互換2個格子之間的style
             if(isMouseClickInTable(event.pageX, event.pageY)) {
-                var toCheck = getNearPosition(userClick.row * gridWidth + userClick.column * 1);
+                var toCheck = getNearPosition(userClick.row * gridWidth + userClick.column * 1); // 找出使用者點擊的格子周圍編號集合
                 for(var i = 0; i < toCheck.length; i++) {
                     console.log(document.getElementById('pic' + toCheck[i]).style);
                     if(document.getElementById('pic' + toCheck[i]).style.display == 'none') {
-                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.display = 'none'; // 使用者點擊的格子隱藏
-                        document.getElementById('pic' + toCheck[i]).style.display = 'block';
+                        var oldStyle = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style;
+                        var newStyle = document.getElementById('pic' + toCheck[i]).style;
+                        
+                        document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style = newStyle;
+                        document.getElementById('pic' + toCheck[i]).style = oldStyle;
                         break;
                     }
                 }
