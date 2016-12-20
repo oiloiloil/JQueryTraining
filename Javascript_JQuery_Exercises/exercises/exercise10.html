@@ -279,11 +279,9 @@
             自動換行，
             每個欄位輸入的值達到最大值的時候，游標自動跳往下一欄位，跳的順序根據idArray放的id順序
          */
-        $("input").keypress(function() {
-            if($(this).val().length == ($(this).attr("maxlength"))-1) {
-                console.log($(this).next());
+        $("input").keyup(function() {
+            if($(this).val().length == ($(this).attr("maxlength"))) {
                 var index = idArray.indexOf($(this).attr("id"));
-                console.log(index);
                 if(index != idArray.length-1)
                     $("#" + idArray[index+1] + "").focus();
             }
@@ -359,12 +357,15 @@
                 return false;
             }
 
-            if($("#stYy").find(":selected").text() > $("#edYy").find(":selected").text() ||
-               $("#stMm").find(":selected").text() > $("#edMm").find(":selected").text() ||
-               $("#stDd").find(":selected").text() > $("#edDd").find(":selected").text()) {
+            var start_time = $("#stYy").find(":selected").text() + "/" + $("#stMm").find(":selected").text() + "/" + $("#stDd").find(":selected").text();
+            var end_time = $("#edYy").find(":selected").text() + "/" + $("#edMm").find(":selected").text() + "/" + $("#edDd").find(":selected").text();
+            var start_date = new Date(Date.parse(start_time));
+            var end_date = new Date(Date.parse(end_time));
+            if(start_date > end_date) {
                 alert("起始日期大於最後日期");
                 return false;
             }
+
             return true;
         }
         

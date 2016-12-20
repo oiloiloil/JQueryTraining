@@ -15,7 +15,8 @@ Question5:列出處理2003年的前十筆訂單（以OrderDate排序）的員工
 
 Question6:列出地址在屏東且提供至少三樣產品的供應商ID並排序。 *修正
 	/*
-		;
+		從Products, Suppliers這2個table裡找出位於屏東，利用GROUP BY SupplierID分組，找出供應商提供的產品數量 >= 3 (COUNT(SupplierID) >= 3)，
+		列出這些供應商的ID
 	*/
 	SELECT S.SupplierID
 	FROM Products P, Suppliers S 
@@ -219,17 +220,19 @@ Question19:列出2004年三月總成交金額最多的5名員工ID及成交金�
 
 Question20:列出2003年平均每月訂單數。
 	/*
-	Tab: 選取在2003年每個月的訂單數量( COUNT( O.OrderID ) AS OrderCounts )。
-	利用AVG()計算Tab平均每個月的訂單數量
+	MonthOrders: 從Orders裡選取在2003年每個月的訂單數量( COUNT( O.OrderID ) AS OrderCounts )，以月分做分組的行為，挑出的欄位有OrderMonth, OrderCounts。
+	從MonthOrders這個結果裡使用AVG()算出在2003年平均每個月的訂單數量
 	*/
-	SELECT AVG(Tab.OrderCounts) AS AvgOrderCnt
+	SELECT AVG(MonthOrders.OrderCounts) AS AvgOrderCnt
 	FROM(SELECT MONTH(O.OrderDate) AS OrderMonth, COUNT( O.OrderID ) AS OrderCounts
 		FROM Orders O
 		WHERE YEAR(O.OrderDate) = '2003'
-			GROUP BY MONTH(O.OrderDate)) Tab;
+			GROUP BY MONTH(O.OrderDate)) MonthOrders;
 
 Question21:依照客戶的送貨城市列出各城市訂購的各種類別的訂單數量。以ShipCity及Category排序。
 	/*
+	從Orders, OrderDetails, Products, Categories這4個table挑出串連的資料，從這些資料中以CategoryID, ShipCity這2個欄位用GROUP BY做分組，
+	挑出ShipCity, CategoryID, 以及各個送貨城市的產品類別的訂單數量，以ShipCity排列
 	*/
 	SELECT O.ShipCity, C.CategoryID, COUNT(P.ProductName) AS Cnt
 	FROM Orders O, OrderDetails OD, Products P, Categories C
@@ -241,7 +244,7 @@ Question22:新增一trigger名為shippers_trigger，當對資料表Shippers進�
 將操作紀錄到日誌表ShippersLog（已存在）
 	/*
 	先確認shippers_trigger是否存在，如果存在的話刪除這張表
-	建立trigger shippers_trigger，當Shippers執行insert, update, delete後會將改變的資料寫進ShippersLog
+	建立trigger shippers_trigger，當Shippers執行insert, update, delete後會將改變的資料寫進ShippersLog 
 	*/
 	IF OBJECT_ID('shippers_trigger','TR') IS NOT NULL
 		DROP TRIGGER shippers_trigger;
@@ -267,6 +270,15 @@ Question22:新增一trigger名為shippers_trigger，當對資料表Shippers進�
 
 Question23:調整薪資，全年處理50筆以上訂單的員工薪資加5%，處理100筆以上訂單則加10%，最多加5000元，且不得高於其主管。
 	/*
+	這裡建立4個CTE，EmployeePays, EmployeeLevel, EmployeeCnt, EmployeePaySalary
+	EmployeePays: 從Employee和Orders遞迴找出主管以及主管的下屬，選出的欄位有EmployeeID, EmployeeName, Manager
+	EmployeeLevel: 將EmployeePays和Employee做串接的動作，選出每個員工的ID, 姓名, 薪資, 以及上司的ID
+	EmployeeCnt: 從Employees和Orders以員工ID和員工姓名做分組條件，挑出員工ID, 員工姓名, 以及他們各自處理的訂單數量 ( COUNT(O.OrderID) )
+	EmployeePaySalary: 從EmployeeLevel, EmployeeCnt這2個CTE遞迴計算上司以及其下屬的薪資加成，下屬的薪資加成幅度不得超過上司的薪資，如果超過的話設定為跟上司一樣的薪資，
+		這個CTE處理完的結果只會出現有調整過薪資的員工以及調整過後的薪資
+
+	將EmployeePaySalary裡面每筆資料更新到Employees裡，更新需要薪資調整的員工的薪資
+	;
 	*/
 	WITH EmployeePays(EmployeeID, EmployeeName, Manager)
 	AS

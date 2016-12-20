@@ -287,12 +287,10 @@
             自動換行，
             每個欄位輸入的值達到最大值的時候，游標自動跳往下一欄位，跳的順序根據idArray放的id順序
          */
-        $("input").keypress(function() {
-            if($(this).val().length == ($(this).attr("maxlength"))-1) {
-                console.log($(this).next());
+        $("input").keyup(function() {
+            if($(this).val().length == ($(this).attr("maxlength"))) {
                 var index = idArray.indexOf($(this).attr("id"));
-                console.log(index);
-                if(index != idArray.length-1)
+                if(index != idArray.length-1) // 還沒到最底部的元素
                     $("#" + idArray[index+1] + "").focus();
             }
         });
@@ -318,7 +316,7 @@
             });
             jQuery.validator.addMethod("checkPhone", function(value, elem) { // value=欄位內容, elem為欄位元素
                 var phoneRule = /^(09)[0-9]{8}/;
-                return value.match(phoneRule);
+                return phoneRule.test(value);
             });
             jQuery.validator.addMethod("confirmPasswd", function(value, elem) { // value=欄位內容, elem為欄位元素
                 var passwd = $("#passwd").val();
@@ -326,11 +324,32 @@
             });
         }
 
+        function isDateCorrect() {
+            if($("#stYy").find(":selected").text() == "請選擇" || $("#edYy").find(":selected").text() == "請選擇" ||
+               $("#stMm").find(":selected").text() == "請選擇" || $("#edMm").find(":selected").text() == "請選擇"  ||
+               $("#stDd").find(":selected").text() == "請選擇" || $("#edDd").find(":selected").text() == "請選擇" ) {
+                alert("請選擇日期");
+                return false;
+            }
+
+            var start_time = $("#stYy").find(":selected").text() + "/" + $("#stMm").find(":selected").text() + "/" + $("#stDd").find(":selected").text();
+            var end_time = $("#edYy").find(":selected").text() + "/" + $("#edMm").find(":selected").text() + "/" + $("#edDd").find(":selected").text();
+            var start_date = new Date(Date.parse(start_time));
+            var end_date = new Date(Date.parse(end_time));
+            if(start_date > end_date) {
+                alert("起始日期大於最後日期");
+                return false;
+            }
+
+            return true;
+        }
+
         $("#submit").click(function() {
             if(!$("#form1").valid())
                 alert("還有欄位輸入錯誤或尚未填入");
             else {
-                showUserInfo();
+                if(isDateCorrect())
+                    showUserInfo();
             }
         });
 
@@ -355,8 +374,7 @@
                     required: true
                 },
                 birth: {
-                    required: true,
-                    date: true
+                    required: true
                 },
                 phone: {
                     required: true,
@@ -367,22 +385,7 @@
                     email: true
                 },
                 stYy: {
-                    required: true
-                },
-                stMm: {
-                    required: true
-                },
-                stDd: {
-                    required: true
-                },
-                edYy: {
-                    required: true
-                },
-                edMm: {
-                    required: true
-                },
-                edDd: {
-                    required: true
+                    required: "請選擇"
                 }
             },
             messages: {
@@ -416,26 +419,8 @@
                     email: "Your email is wrong."
                 },
                 stYy: {
-                    required: "請輸入"
-                },
-                stMm: {
-                    required: "請輸入"
-                },
-                stDd: {
-                    required: "請輸入"
-                },
-                edYy: {
-                    required: "請輸入"
-                },
-                edMm: {
-                    required: "請輸入"
-                },
-                edDd: {
-                    required: "請輸入"
+                    required: "請填入日期"
                 }
-            },
-            submitHandler: function(form) {
-                form.submit();
             }
         });
         

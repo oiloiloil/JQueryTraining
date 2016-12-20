@@ -65,7 +65,6 @@
 	<script>
 		var delayTime = 5000; // delay for 5s
 		var picIndex = 0; // 第一張圖片
-        var picCount = 3; // 目前有三張圖片
         var picArray = ["img/ex5ad1.jpg", "img/ex5ad2.jpg", "img/ex5ad3.jpg"];
         var myVar = setInterval(updatePicture_auto, delayTime);
 
@@ -93,8 +92,6 @@
             $("#ad").attr("src", img);
             picIndex = jQuery.inArray(img, picArray); // 更新picIndex
         }
-		
-		
 	</script>
 </body>
 
