@@ -362,7 +362,7 @@
             if($("#stYy").find(":selected").text() > $("#edYy").find(":selected").text() ||
                $("#stMm").find(":selected").text() > $("#edMm").find(":selected").text() ||
                $("#stDd").find(":selected").text() > $("#edDd").find(":selected").text()) {
-                alert("起始日期小於最後日期");
+                alert("起始日期大於最後日期");
                 return false;
             }
             return true;

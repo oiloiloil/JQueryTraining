@@ -13,25 +13,26 @@ Question4:列出曾在2004年（以OrderDate為主）處理訂單的員工ID（�
 Question5:列出處理2003年的前十筆訂單（以OrderDate排序）的員工ID。
 	SELECT TOP 10 EmployeeID FROM Orders WHERE year(OrderDate)='2003' ORDER BY OrderDate;
 
-Question6:列出地址在屏東且提供至少三樣產品的供應商ID並排序。
+Question6:列出地址在屏東且提供至少三樣產品的供應商ID並排序。 *修正
 	/*
-	先選取位於屏東的供應商，以及使用COUNT()計算這些供應商提供的產品數量，將這個結果設為Tab，接著在外層選取產品數量>=3Tab的供應商ID
+		;
 	*/
-	SELECT Tab.SupplierID 
-	FROM(SELECT COUNT(S.SupplierID) AS S_Count, S.SupplierID FROM Products P, Suppliers S 
-		WHERE S.City LIKE '屏東%' AND P.SupplierID = S.SupplierID GROUP BY S.SupplierID) Tab
-	WHERE Tab.S_Count >= 3;
+	SELECT S.SupplierID
+	FROM Products P, Suppliers S 
+	WHERE S.City LIKE '屏東%' AND P.SupplierID = S.SupplierID
+	GROUP BY S.SupplierID
+		HAVING COUNT(S.SupplierID) >= 3
 
 Question7:查詢林姓員工的數量。
 	/*
-	從Employees計算林姓員工的數量
+	從Employees挑選出員工名字為林姓的員工，並利用COUNT()計算有多少人
 	*/
 	SELECT count(EmployeeID) AS EmpCount FROM Employees WHERE EmployeeName LIKE '林%';
 
 Question8:列出不提供肉/家禽類和海鮮類產品的供應商CompanyName並排序。
 	/*
-	從供應商裡選取沒有提供'肉/家禽'、'海鮮'這兩中產品類別的公司名稱，在WHERE的條件裡先確認有提供'肉/家禽'、'海鮮'的供應商ID
-	接著找出不存在上述結果的供應商，並以公司名稱進行排序
+	首先找出有哪些供應商提供的產品的產品類別為'肉/家禽'、'海鮮' (C.CategoryName IN ('肉/家禽','海鮮'))，找出這些供應商的ID，
+	接著再從所有的供應商裡挑出不存在上述結果裡的SupplierID的CompanyName，最後以CompanyName進行排序
 	*/
 	SELECT S.CompanyName
 	FROM Suppliers S
@@ -43,88 +44,101 @@ Question8:列出不提供肉/家禽類和海鮮類產品的供應商CompanyName�
 
 Question9:列出每項產品類別共有多少產品（欄位：類別名稱、數量）並以CategoryID排序。
 	/*
-	先計算每個類別有多少項產品AS Num，結果存為Tab，接著在外層選取類別名稱以及各類別的產品數量，並以類別ID排序
+	從Products和Categories這2個table裡找出每個CategoryID相對應ProductID的結果，使用GROUP BY CategoryName, CategoryID這兩個欄位進行分組，
+	挑出產品類別名稱以及相對應的產品數量，最後以CategoryID排序
 	*/
-	SELECT Tab.CategoryName, Tab.Num
-	FROM(SELECT C.CategoryID, C.CategoryName, COUNT(C.CategoryName) AS Num
-		FROM Products P, Categories C
-		WHERE P.CategoryID = C.CategoryID
-			GROUP BY C.CategoryName, C.CategoryID) Tab
-	ORDER BY Tab.CategoryID;
+	SELECT C.CategoryName, COUNT(C.CategoryName) AS Num
+	FROM Products P, Categories C
+	WHERE P.CategoryID = C.CategoryID
+	GROUP BY C.CategoryName, C.CategoryID
+	ORDER BY C.CategoryID;
 
 Question10:列出在2004年曾經購買過每一種類別至少一項產品的客戶ID並排序。
 	/*
-	Tab: 挑出下單日期為2004的結果，欄位為類別ID和顧客ID，利用GROUP BY避免重複出現每個顧客購買相同類型產品的結果(GROUP BY C.CategoryID, O.CustomerID)
-	Tab2: 計算在Categories有多少項類別，將結果存為C-Count
-	在外層根據每個顧客的購買數量是否>=Tab.C-Count，true的話代表這位顧客每個類別至少有買過一項產品，並以顧客ID排序
+	分別先建立2個CTE: CustomerBuy, CategoryCount
+	CustomerBuy: 挑出三個欄位(CategoryID, CustomerID)，挑出產品類別ID和顧客ID，在2004年曾買過產品，利用GROUP BY CategoryID, CustomerID分組
+	CategoryCount: 計算出Categories這個table有多少筆資料，並將值存成C_Count
+	
+	接著透過上述2個CTE，使用COUNT(CustomerBuy.CustomerID)算出每個顧客有買過哪幾種類別的產品，找出COUNT()等於類別數量的顧客ID
 	*/
-	SELECT Tab.CustomerID
-	FROM(SELECT C.CategoryID, O.CustomerID
+	WITH CustomerBuys (CategoryID, CustomerID) 
+	AS
+	(
+		SELECT C.CategoryID, O.CustomerID
 		FROM Orders O, OrderDetails OD, Products P, Categories C
 		WHERE YEAR(O.OrderDate) = '2004' AND O.OrderID = OD.OrderID AND P.ProductID = OD.ProductID
-			AND C.CategoryID = P.CategoryID 
-			GROUP BY C.CategoryID, O.CustomerID) Tab, 
-		(SELECT COUNT(C.CategoryID) AS C_Count
-		FROM Categories C) Tab2
-	GROUP BY Tab.CustomerID, Tab2.C_Count
-	HAVING COUNT(Tab.CustomerID) >= Tab2.C_Count
-	ORDER BY Tab.CustomerID;
+				AND C.CategoryID = P.CategoryID
+		GROUP BY C.CategoryID, O.CustomerID
+	),
+	CategoryCount (C_Count)
+	AS
+	(
+		SELECT COUNT(C.CategoryID) AS C_Count
+		FROM Categories C
+	)
+	SELECT CB.CustomerID
+	FROM CustomerBuys CB, CategoryCount CC
+	GROUP BY CB.CustomerID, CC.C_Count
+	HAVING COUNT(CB.CustomerID) >= CC.C_Count
 
 Question11:依照年度（OrderDate）列出該年度訂單總數、總訂單金額（UnitPrice * Quantity * (1-Discount)）、平均每筆訂單金額（金額皆四捨五入至小數點後第二位）並以總金額排序由大到小排序。
 	/*
-	Tab1: 根據YEAR(OrderDate)確認每一年的定單數量有多少(COUNT(Tab1.Years))。
-	在最外層計算每一年的訂單的獲利總和以及平均每一年的獲利為多少(將全部年的獲利加總除於有多少年)
+	建立一個CTE: YearBuys
+	YearBuys: 從Order找出每年度有多少訂單數量，分別有兩個欄位(Years, Counts)每一年有多少訂單
+	
+	從OrderDetail和Order找出相同OrderID的結果，利用GROUP BY Years, Counts分組，計算出每個年度底下訂單的總金額以及平均每筆訂單的金額，
+	挑出每個年度的訂單數量，每個年度總金額以及每個年度平均每張訂單的金額
 	*/
-	SELECT Tab1.Years AS Years, Tab1.Counts AS Counts, ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)), 2) AS PriceSum,
-		ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)) / Tab1.Counts, 2) AS PriceAverage
-	FROM Orders O, OrderDetails OD ,
-		(SELECT Tab1.Years AS Years, COUNT(Tab1.Years) AS Counts
-			FROM(SELECT YEAR(O.OrderDate) AS Years FROM Orders O) Tab1
-			GROUP BY Tab1.Years) Tab1
-	WHERE O.OrderID = OD.OrderID AND YEAR(O.OrderDate) = Tab1.Years
-		GROUP BY Tab1.Years, Tab1.Counts
-		ORDER BY PriceSum DESC;
+	With YearBuys(Years, Counts)
+	AS
+	(
+		SELECT YEAR(O.OrderDate) AS Years, COUNT(YEAR(O.OrderDate)) AS Counts
+		FROM Orders O
+		GROUP BY YEAR(O.OrderDate)
+	)
+	SELECT YB.Years, YB.Counts, ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)), 2) AS PriceSum,
+		ROUND(SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)) / YB.Counts, 2) AS PriceAverage
+	FROM Orders O, OrderDetails OD, YearBuys YB
+	WHERE O.OrderID = OD.OrderID AND YEAR(O.OrderDate) = YB.Years
+	GROUP BY YB.Years, YB.Counts
+	ORDER BY PriceSum DESC;
 
 Question12:列出在2002年負責20筆以上訂單的員工ID並以員工ID排序。
 	/*
-		Tab: 計算Orders裡訂單的日期在2002年的數量，儲存每項訂單的員工ID以及其所處理的2002訂單數量
-		挑選訂單數量 >= 20 的員工ID
+	從Orders找出訂單日期為2002年，並以EmployeeID分組，找出每個員工處理過的訂單數量是否>=20 COUNT(*)>=20，
+	挑出這些員工的ID
 	*/
-	SELECT Tab.EmployeeID
-	FROM(SELECT Orders.EmployeeID, COUNT(Orders.CustomerID) AS O_Count 
-		FROM Orders 
-		WHERE YEAR(OrderDate)='2002' 
-			GROUP BY EmployeeId) Tab 
-	WHERE Tab.O_Count >= 20;
-	
-	// 另一種寫法
 	SELECT Orders.EmployeeID 
 	FROM Orders 
 	WHERE YEAR(OrderDate)='2002' 
-		GROUP BY EmployeeId 
-	HAVING COUNT(Orders.CustomerID) >= 20; 
+	GROUP BY EmployeeId 
+	HAVING COUNT(*) >= 20;  
 
 Question13:分別列出每一年使用次數最多的貨運方式ID。
 	/*
-	Tab: 選取每一年，計算各年的運輸方式以及其次數(COUNT(O.ShipVia))
-	Tab1, Tab2: 每一年最多的運輸次數的方式
-	挑出Tab1運輸次數 == Tab2最大的運輸次數
+	建立兩個CTE: ShipViaYear, ShipMaxVia
+	ShipViaYear: 找出每個年度分別使用哪種方式進行運輸(ShipVia)，以及運輸次數(ShipVias)，以年度進行分組 
+	ShipMaxVia: 挑出每個年度最大的運輸次數
+
+	接著使用以上2個CTE，以ShipViaYear的運輸次數 = ShipMaxVia的最大運輸次數的條件找出每個年度最多的運輸次數以及運輸方式
 	*/
-	SELECT Tab1.Years, Tab1.ShipVia
-	FROM(SELECT Tab.Years, Tab.ShipVia, MAX(Tab.ShipVias) AS ShipVias
-		FROM(SELECT YEAR(O.OrderDate) AS Years, COUNT(O.ShipVia) AS ShipVias, O.ShipVia
-			FROM Orders O
-				GROUP BY YEAR(O.OrderDate), O.ShipVia) Tab
-			GROUP BY Tab.Years, Tab.ShipVia) Tab1,
-		(SELECT Tab.Years, Tab.ShipVia, MAX(Tab.ShipVias) AS ShipVias
-		FROM(SELECT YEAR(O.OrderDate) AS Years, COUNT(O.ShipVia) AS ShipVias, O.ShipVia
-			FROM Orders O
-				GROUP BY YEAR(O.OrderDate), O.ShipVia) Tab
-			GROUP BY Tab.Years, Tab.ShipVia) Tab2
-	WHERE Tab1.Years = Tab2.Years 
-		GROUP BY Tab1.ShipVias, Tab1.Years, Tab1.ShipVia
-		HAVING Tab1.ShipVias = Max(Tab2.ShipVias)
-		ORDER BY Tab1.Years ASC;
+	With ShipViaYear(Years, ShipVias, ShipVia)
+	AS
+	(
+		SELECT YEAR(O.OrderDate) AS Years, COUNT(O.ShipVia) AS ShipVias, O.ShipVia
+		FROM Orders O
+		GROUP BY YEAR(O.OrderDate), O.ShipVia
+	),
+	ShipMaxVia(Years, ShipVias)
+	AS
+	(
+		SELECT SVY.Years, MAX(SVY.ShipVias)
+		FROM ShipViaYear SVY
+		GROUP BY SVY.Years
+	)
+	SELECT SVY.Years, SVY.ShipVia
+	FROM ShipMaxVia SMV, ShipViaYear SVY
+	WHERE SVY.Years = SMV.Years AND SVY.ShipVias = SMV.ShipVias
 
 Question14:列出曾經處理過「凱誠國際顧問公司」和「師大貿易」的訂單的員工ID及姓名並以ID排序。
 	/*
@@ -156,16 +170,24 @@ Question16:列出送貨日期延誤的訂單編號（ShippedDate晚於RequiredDa
 
 Question17:列出主管ID、姓名、薪資、其管理的下屬數量和下屬平均薪資。以主管ID排序。
 	/*
-	Tab: 利用兩個Employees table: E1, E2，找出主管的ID, 姓名, 薪水，主管屬下的姓名，薪水
-	在外層計算各主管其底下屬下的薪水總合以及平均薪水
+	建立一個CTE: ManagerAndEmployeeSalary
+	ManagerAndEmployeeSalary: 用兩個Employees E1, E2，以E1.EmployeeID = E2.ManagerID的條件，挑出主管ID，主管姓名，主管薪水，員工姓名，員工薪水
+
+	再從ManagerAndEmployeeSalary裡挑出主管ID，主管姓名，主管薪水，以及計算每個主管底下的下屬的薪水總和，和每個主管底下的下屬平均薪水
 	*/
-	SELECT Tab.EmployeeID, Tab.Manager AS EmployeeName, Tab.ManagerSalary AS Salary, COUNT(Tab.EmployeeName) AS SubCount, AVG(Tab.Salary) AS SubAverageSalary
-	FROM(SELECT E1.EmployeeID, E1.EmployeeName AS Manager, E1.Salary AS ManagerSalary, E2.EmployeeName, E2.Salary
+	With ManagerAndEmployeeSalary(EmployeeID, Manager, ManagerSalary, EmployeeName, Salary)
+	AS
+	(
+		SELECT E1.EmployeeID, E1.EmployeeName AS Manager, E1.Salary AS ManagerSalary, E2.EmployeeName, E2.Salary
 		FROM Employees E1, Employees E2
 		WHERE E1.EmployeeID = E2.ManagerID
-			GROUP BY E1.EmployeeID, E1.EmployeeName, E1.Salary, E2.EmployeeName, E2.Salary) Tab
-		GROUP BY Tab.EmployeeID, Tab.Manager, Tab.ManagerSalary
-		ORDER BY Tab.EmployeeID;
+		GROUP BY E1.EmployeeID, E1.EmployeeName, E1.Salary, E2.EmployeeName, E2.Salary
+	)
+	SELECT MAES.EmployeeID, MAES.Manager AS EmployeeName, MAES.ManagerSalary AS Salary, COUNT(MAES.EmployeeName) AS SubCount, AVG(MAES.Salary) AS SubAverageSalary
+	FROM ManagerAndEmployeeSalary MAES
+	GROUP BY MAES.EmployeeID, MAES.Manager, MAES.ManagerSalary
+	ORDER BY MAES.EmployeeID;
+
 
 Question18:列出產品編號、名稱、庫存量UnitsInStock、已訂購量UnitsOnOrder及安全存量ReorderLevel，並新增一欄位其值為'safe'（庫存量 >= 安全存量）
 	或'reordering'（庫存量 < 安全存量 & 已訂購量+庫存量 >= 安全存量）或'unsafe'（其他）。
@@ -187,7 +209,7 @@ Question18:列出產品編號、名稱、庫存量UnitsInStock、已訂購量Uni
 
 Question19:列出2004年三月總成交金額最多的5名員工ID及成交金額並以成交金額由大到小排序。
 	/*
-	WHERE的條件為訂單日期為2004年以及負責的月份為3月，從Orders和OrderDetails挑出前5為員工的ID以及他們負責訂單的總金額AS TotalPrice，以TotalPrice排序
+	WHERE的條件: 訂單日期為2004年的3月以及找出Orders和OrderDetails相同的OrderID，以EmployeeID分組以及員工處理訂單的總金額由大到小排序，接著從前面的結果裡挑出前5位員工的ID以及他們各自負責訂單的總金額AS TotalPrice
 	*/
 	SELECT TOP 5 O.EmployeeID, SUM(OD.UnitPrice * OD.Quantity * (1 - OD.Discount)) AS TotalPrice
 	FROM Orders O, OrderDetails OD
