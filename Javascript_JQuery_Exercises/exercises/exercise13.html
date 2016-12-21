@@ -23,46 +23,40 @@
         var gridWidth = 3; // 目前預設為3X3的正方形
         var pos = {};
 
+        /*
+            0  1  2
+            3  4  5
+            6  7  8
+            圖片的編號如上所示
+            取一個隨機數randomNum，範圍從0~(gridWidth平方)，用來選擇哪個板子在一開始時消失
+         */
         $(document).ready(function() {
             var randomNum = Math.floor(Math.random() * (gridWidth * gridWidth));
             console.log("random: " + randomNum);
             //set the initial puzzle
             for (i = 0; i < gridWidth * gridWidth; i++) {
                 part(document.getElementById('pic' + i), i);
-                pos[i] = {row: parseInt(i / gridWidth), column: i % gridWidth};
+                pos[i] = {row: parseInt(i / gridWidth), column: i % gridWidth}; // 儲存每塊格子為第幾個row, 第幾個column
                 if(i == randomNum) {
                     document.getElementById('pic' + i).style.display = 'none';
                 }
             }
-            //messPic();
         });
 
-        function messPic() {
-            for(var i = 0; i < 100; i++) {
-                var cells = $("#picDiv");
-                //找出空格所在位置，並取得其相鄰圖塊
-                var toMove = getNearPosition(cells.index($("#Pic0")[0]));
-                cells.eq(toMove[ //由空格的相鄰圖塊擇一挪動
-                    parseInt(Math.random() * toMove.length) 
-                ]).click();
-            }
-        }
-
-        // 回傳一個陣列，裡面包含目前使用者點擊的格子的周圍圖片ID編號
+        // 回傳一個陣列，裡面包含目前使用者點擊的格子的周圍格子的ID編號
         function getNearPosition(i) {
-            console.log("index: " + i);
-            console.log(pos[i]);
             var pool = [];
-            var row = pos[i].row, col = pos[i].column;
-            //toCheck用來放入待比對的對象
-            if (row > 0) //上
-                pool.push((row - 1) *  gridWidth + col);
-            if (row < gridWidth - 1) //下
-                pool.push((row + 1) * gridWidth + col);
-            if (col  >  0) //左
-                pool.push( i - 1);
-            if (col < gridWidth - 1) //右
-                pool.push(i + 1);
+            if(i >= 0) {
+                var row = pos[i].row, col = pos[i].column;
+                if (row > 0) //上
+                    pool.push((row - 1) *  gridWidth + col);
+                if (row < gridWidth - 1) //下
+                    pool.push((row + 1) * gridWidth + col);
+                if (col  >  0) //左
+                    pool.push( i - 1);
+                if (col < gridWidth - 1) //右
+                    pool.push(i + 1);
+            }
             return pool;
         }
 
@@ -77,15 +71,23 @@
             block.style.left = y + 'px';
         }
 
+        /*
+            userClick用來存放目前使用者點擊的位置，是在幾row幾column
+            確認使用者點擊的位置是在拼圖裡後，
+            先取出使用者點擊的格子周圍的格子編號array: toCheck
+            執行for迴圈，尋找toCheck裡面的每個格子他的 style.display = 'none'(代表這塊格子是'空的')
+            這道這塊空格後將使用者點擊的格子和這塊空格進行style(top, left)互換
+         */
         var userClick = {row:-1 , column: -1}; // 使用者目前點擊的格子
         $(document).click(function(event) { // 互換2個格子之間的style
             if(isMouseClickInTable(event.pageX, event.pageY)) {
                 var toCheck = getNearPosition(userClick.row * gridWidth + userClick.column * 1); // 找出使用者點擊的格子周圍編號集合
                 for(var i = 0; i < toCheck.length; i++) {
-                    console.log(document.getElementById('pic' + toCheck[i]).style);
                     if(document.getElementById('pic' + toCheck[i]).style.display == 'none') {
+                        // 圖片格
                         var oldStyle_top = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.top;
                         var oldStyle_left = document.getElementById('pic' + (userClick.row * gridWidth + userClick.column * 1)).style.left;
+                        // 空格
                         var newStyle_top = document.getElementById('pic' + toCheck[i]).style.top;
                         var newStyle_left = document.getElementById('pic' + toCheck[i]).style.left;
                         
@@ -105,9 +107,11 @@
         function isMouseClickInTable(mouseX, mouseY) {
             var startX = $("#table").offset().left, startY = $("#table").offset().top;
             var width = $("#table").width(), height = $("#table").height();
-            var perW = width / gridWidth, perH = height / gridWidth; // perW: 每格寬度為多少, perH: 每格高度為多少
+            var perW = parseInt(width / gridWidth), perH = parseInt(height / gridWidth); // perW: 每格寬度為多少, perH: 每格高度為多少
             var mouseXInPic = mouseX - startX, mouseYInPic = mouseY - startY;
-            if(mouseXInPic / perW >= gridWidth) {
+            if(mouseXInPic < 0 || mouseYInPic < 0) // 在左邊或上面會出現 <0 的情形
+                return false;
+            if(mouseXInPic / perW >= gridWidth) { // 按的位置超過拼圖直接return false
                 return false;
             }
             if(mouseYInPic / perH >= gridWidth) {

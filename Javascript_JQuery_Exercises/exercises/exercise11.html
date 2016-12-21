@@ -307,7 +307,7 @@
 
         function setRules() {
             jQuery.validator.addMethod("checkName", function(value, elem) { // value=欄位內容, elem為欄位元素
-                var nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]/;
+                var nameRule = /^[a-zA-Z]+[a-zA-Z0-9_]*/;
                 return value.match(nameRule);
             });
             jQuery.validator.addMethod("checkPassword", function(value, elem) { // value=欄位內容, elem為欄位元素
@@ -354,6 +354,7 @@
         });
 
         $("#form1").validate({
+            debug: true,
             rules: {
                 usr: {
                     required: true,
@@ -383,9 +384,6 @@
                 mail: {
                     required: true,
                     email: true
-                },
-                stYy: {
-                    required: "請選擇"
                 }
             },
             messages: {
@@ -417,9 +415,6 @@
                 mail: {
                     required: "Please enter your email.",
                     email: "Your email is wrong."
-                },
-                stYy: {
-                    required: "請填入日期"
                 }
             }
         });
