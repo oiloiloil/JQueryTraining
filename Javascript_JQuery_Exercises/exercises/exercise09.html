@@ -205,7 +205,6 @@
             $("#keyword").val($("#suggest").text());
         });
         
-        // $("#suggest")會有閃爍的情形，如:輸入a special study, 還沒驗證輸入的格式(正規表示)
         $("#keyword").keyup(function() {
             var keyword = $(this).val();
             var tempURL = SUGGEST_URL + $("#keyword").val();
